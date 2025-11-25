@@ -1,4 +1,4 @@
-# 🎓 LearnForge - Full-Stack Educational Platform
+# 🎓 Learning Management - Full-Stack Educational Platform
 
 > **Master Modern Software Engineering** - Interactive learning platform for System Design, DSA, and Cloud Certifications
 
@@ -26,7 +26,7 @@ A modern, comprehensive learning platform designed for software engineers and de
 
 ## 🎯 Project Overview
 
-LearnForge is an innovative educational platform that combines:
+Learning Management is an innovative educational platform that combines:
 
 - **🧠 Interactive Learning**: Hands-on coding challenges and visual system design tutorials
 - **🎮 Gamification**: XP system, achievements, daily streaks, and progress tracking
@@ -53,8 +53,8 @@ LearnForge is an innovative educational platform that combines:
 All code is consolidated in the `frontend/` folder:
 
 ```
-LearnForge/
-├── frontend/          # Complete LearnForge Application
+Learning Management/
+├── frontend/          # Complete Learning Management Application
 │   ├── src/          # React frontend source code
 │   │   ├── components/  # UI components
 │   │   ├── pages/       # Page components
@@ -80,7 +80,7 @@ LearnForge/
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd LearnForge
+cd Learning Management
 
 # Navigate to the frontend folder (contains everything)
 cd frontend
@@ -92,7 +92,7 @@ npm install
 ### 2. Start the Application
 
 ```bash
-# Start the complete LearnForge application
+# Start the complete Learning Management application
 npm run dev
 ```
 
@@ -228,7 +228,7 @@ Open your browser and navigate to the displayed URL (usually `http://localhost:5
 
 ### Frontend Deployment (Production Ready)
 
-LearnForge is built as a static web application and can be deployed to any modern hosting platform.
+Learning Management is built as a static web application and can be deployed to any modern hosting platform.
 
 #### Quick Deploy Commands
 ```bash
@@ -318,7 +318,7 @@ When the backend API is implemented, deploy to:
 #### **Heroku**
 ```bash
 # Create Heroku app
-heroku create learnforge-backend
+heroku create learning-management-backend
 
 # Set environment variables
 heroku config:set NODE_ENV=production
@@ -422,7 +422,7 @@ We welcome contributions from the community! Here's how to get involved:
 
 ### 🚀 **Getting Started**
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/your-username/learnforge.git`
+2. Clone your fork: `git clone https://github.com/your-username/learning-management.git`
 3. Create a feature branch: `git checkout -b feature/amazing-feature`
 4. Install dependencies: `cd frontend && npm install`
 
@@ -479,13 +479,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues**: [GitHub Issues](https://github.com/your-repo/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/your-repo/discussions)
-- **Email**: support@learnforge.com
+- **Email**: support@learning-management.com
 
 ---
 
 ## 🎊 Success Stories
 
-*"LearnForge helped me land my dream job at FAANG. The system design tutorials were incredibly detailed and the DSA playground made algorithm practice actually fun!"*
+*"Learning Management helped me land my dream job at FAANG. The system design tutorials were incredibly detailed and the DSA playground made algorithm practice actually fun!"*
 — Sarah Chen, Senior Software Engineer at Google
 
 *"The gamification elements kept me motivated during my AWS certification prep. I went from 0 to certified in 3 months!"*
@@ -493,18 +493,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support & Community
 
-- **📧 Email**: hello@learnforge.dev
-- **🐛 Bug Reports**: [GitHub Issues](https://github.com/learnforge/learnforge/issues)
-- **💬 Discussions**: [GitHub Discussions](https://github.com/learnforge/learnforge/discussions)
-- **📖 Documentation**: [LearnForge Docs](https://docs.learnforge.dev)
-- **🎮 Demo**: [Live Demo](https://learnforge.dev)
+- **📧 Email**: hello@learning-management.dev
+- **🐛 Bug Reports**: [GitHub Issues](https://github.com/learning-management/learning-management/issues)
+- **💬 Discussions**: [GitHub Discussions](https://github.com/learning-management/learning-management/discussions)
+- **📖 Documentation**: [Learning Management Docs](https://docs.learning-management.dev)
+- **🎮 Demo**: [Live Demo](https://learning-management.dev)
 
 ## 📊 Project Stats
 
-[![Stars](https://img.shields.io/github/stars/learnforge/learnforge?style=social)](https://github.com/learnforge/learnforge)
-[![Forks](https://img.shields.io/github/forks/learnforge/learnforge?style=social)](https://github.com/learnforge/learnforge)
-[![Issues](https://img.shields.io/github/issues/learnforge/learnforge)](https://github.com/learnforge/learnforge/issues)
-[![PRs](https://img.shields.io/github/issues-pr/learnforge/learnforge)](https://github.com/learnforge/learnforge/pulls)
+[![Stars](https://img.shields.io/github/stars/learning-management/learning-management?style=social)](https://github.com/learning-management/learning-management)
+[![Forks](https://img.shields.io/github/forks/learning-management/learning-management?style=social)](https://github.com/learning-management/learning-management)
+[![Issues](https://img.shields.io/github/issues/learning-management/learning-management)](https://github.com/learning-management/learning-management/issues)
+[![PRs](https://img.shields.io/github/issues-pr/learning-management/learning-management)](https://github.com/learning-management/learning-management/pulls)
 
 ---
 
@@ -512,7 +512,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with ❤️ for developers who want to master modern technologies.**
 
-*LearnForge - Where Learning Meets Gamification* 🚀✨
+*Learning Management - Where Learning Meets Gamification* 🚀✨
 
 ---
 

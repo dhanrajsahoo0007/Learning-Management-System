@@ -26,7 +26,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     editorRef.current = editor;
 
     // Configure Monaco Editor
-    monaco.editor.defineTheme('learnforge-dark', {
+    monaco.editor.defineTheme('learning-management-dark', {
       base: 'vs-dark',
       inherit: true,
       rules: [],
@@ -35,7 +35,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       }
     });
 
-    monaco.editor.defineTheme('learnforge-light', {
+    monaco.editor.defineTheme('learning-management-light', {
       base: 'vs',
       inherit: true,
       rules: [],
@@ -46,7 +46,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
     // Set theme based on system preference (will be updated by theme context)
     const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    monaco.editor.setTheme(isDark ? 'learnforge-dark' : 'learnforge-light');
+    monaco.editor.setTheme(isDark ? 'learning-management-dark' : 'learning-management-light');
   };
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       if (editorRef.current) {
         const monaco = (window as any).monaco;
         if (monaco) {
-          monaco.editor.setTheme(mediaQuery.matches ? 'learnforge-dark' : 'learnforge-light');
+          monaco.editor.setTheme(mediaQuery.matches ? 'learning-management-dark' : 'learning-management-light');
         }
       }
     };

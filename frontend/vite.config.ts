@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'LearnForge - Master System Design & DSA',
-        short_name: 'LearnForge',
+        name: 'Learning Management - Master System Design & DSA',
+        short_name: 'Learning Management',
         description: 'Modern educational platform for System Design, DSA, and Cloud Certifications',
         theme_color: '#4f46e5',
         background_color: '#ffffff',

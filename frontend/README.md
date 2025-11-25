@@ -1,6 +1,6 @@
-# LearnForge Backend API
+# Learning Management Backend API
 
-Backend API for the LearnForge educational platform.
+Backend API for the Learning Management educational platform.
 
 ## 🚀 Status
 

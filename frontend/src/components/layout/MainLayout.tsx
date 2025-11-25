@@ -2,7 +2,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
-import { StreakCounter } from '@/components/shared/StreakCounter';
 import { User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -36,7 +35,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 <span className="text-white font-bold text-sm">LF</span>
               </div>
               <span className="text-xl font-bold text-gray-900 dark:text-white">
-                LearnForge
+                Learning Management
               </span>
             </motion.div>
 
@@ -51,7 +50,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             {/* Right side actions */}
             <div className="flex items-center space-x-4">
               <SearchBar />
-              <StreakCounter />
               <ThemeToggle />
 
               {/* Profile Avatar */}
