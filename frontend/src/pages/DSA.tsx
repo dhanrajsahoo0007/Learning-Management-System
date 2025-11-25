@@ -5,17 +5,15 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Badge } from '@/components/ui/Badge';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { CodeEditor } from '@/components/ui/CodeEditor';
-import { dsaTopics, dsaCategories } from '@/data/dsaData';
+import { dsaTopics } from '@/data/dsaData';
 import { mockExecuteCode, ExecutionResult } from '@/lib/utils';
 import {
   ChevronDown,
   ChevronRight,
   Play,
   Lightbulb,
-  CheckCircle,
   Code,
   Eye,
-  EyeOff,
   RotateCcw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -75,6 +73,22 @@ const TopicCategory: React.FC<{
 // Topic Card Component
 const TopicCard: React.FC<{ topic: typeof dsaTopics[0] }> = ({ topic }) => {
   const navigate = useNavigate();
+  const [expanded, setExpanded] = useState(false);
+
+  // Safety check for subcomponents
+  const subcomponents = topic.subcomponents || [];
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Only navigate if not clicking on the expand button
+    if (!(e.target as HTMLElement).closest('.expand-button')) {
+      navigate(`/dsa/${topic.id}`);
+    }
+  };
+
+  const handleExpandClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpanded(!expanded);
+  };
 
   return (
     <motion.div
@@ -83,13 +97,28 @@ const TopicCard: React.FC<{ topic: typeof dsaTopics[0] }> = ({ topic }) => {
     >
       <Card
         className="cursor-pointer group border-l-4 border-l-primary-500"
-        onClick={() => navigate(`/dsa/${topic.id}`)}
+        onClick={handleCardClick}
       >
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-2">
-            <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-              {topic.title}
-            </h4>
+            <div className="flex items-center space-x-2 flex-1">
+              <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                {topic.title}
+              </h4>
+              {subcomponents.length > 0 && (
+                <button
+                  onClick={(e) => handleExpandClick(e)}
+                  className="expand-button p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                  aria-label={expanded ? "Collapse subcomponents" : "Expand subcomponents"}
+                >
+                  {expanded ? (
+                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-gray-500" />
+                  )}
+                </button>
+              )}
+            </div>
             <Badge variant={
               topic.difficulty === 'Easy' ? 'success' :
               topic.difficulty === 'Medium' ? 'warning' : 'danger'
@@ -100,11 +129,48 @@ const TopicCard: React.FC<{ topic: typeof dsaTopics[0] }> = ({ topic }) => {
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
             {topic.description}
           </p>
+          
+          {/* Subcomponents List */}
+          <AnimatePresence>
+            {expanded && subcomponents.length > 0 && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden mb-3"
+              >
+                <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    Topics ({subcomponents.length}):
+                  </p>
+                  <div className="space-y-1 max-h-48 overflow-y-auto">
+                    {subcomponents.map((sub, index) => (
+                      <div
+                        key={index}
+                        className="text-xs text-gray-600 dark:text-gray-400 pl-2 py-1 hover:bg-gray-50 dark:hover:bg-gray-800 rounded"
+                      >
+                        • {sub}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <div className="flex items-center justify-between">
-            <ProgressRing progress={topic.progress} size={32} />
-            <span className="text-xs text-gray-500">
-              {topic.progress}% complete
-            </span>
+            <div className="flex items-center space-x-2">
+              <ProgressRing progress={topic.progress} size={32} />
+              <span className="text-xs text-gray-500">
+                {topic.progress}% complete
+              </span>
+            </div>
+            {subcomponents.length > 0 && (
+              <span className="text-xs text-gray-500">
+                {subcomponents.length} subtopics
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -500,20 +566,6 @@ const TopicDetail: React.FC = () => {
 
 // Main DSA Page Component
 const DSA: React.FC = () => {
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(['Arrays & Strings']) // Default expanded
-  );
-
-  const toggleCategory = (category: string) => {
-    const newExpanded = new Set(expandedCategories);
-    if (newExpanded.has(category)) {
-      newExpanded.delete(category);
-    } else {
-      newExpanded.add(category);
-    }
-    setExpandedCategories(newExpanded);
-  };
-
   return (
     <Routes>
       <Route
@@ -528,32 +580,38 @@ const DSA: React.FC = () => {
               className="text-center mb-12"
             >
               <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-4">
-                Master <span className="text-primary-600 dark:text-primary-400">Data Structures</span>
+                Master <span className="text-primary-600 dark:text-primary-400">Data Structures & Algorithms</span>
               </h1>
               <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
                 Interactive coding challenges with visual explanations, code playground, and comprehensive test cases.
               </p>
+              <div className="flex items-center justify-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+                <span className="flex items-center space-x-1">
+                  <Code className="w-4 h-4" />
+                  <span>{dsaTopics.length} Topics</span>
+                </span>
+                <span>•</span>
+                <span>230+ Problems</span>
+                <span>•</span>
+                <span>4 Languages</span>
+              </div>
             </motion.div>
 
-            {/* Topic Categories */}
+            {/* All Topics in Sequential Order */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.3 }}
+              className="space-y-3"
             >
-              {dsaCategories.map((category, index) => (
+              {dsaTopics.map((topic, index) => (
                 <motion.div
-                  key={category}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  key={topic.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
                 >
-                  <TopicCategory
-                    category={category}
-                    topics={dsaTopics}
-                    expanded={expandedCategories.has(category)}
-                    onToggle={() => toggleCategory(category)}
-                  />
+                  <TopicCard topic={topic} />
                 </motion.div>
               ))}
             </motion.div>
