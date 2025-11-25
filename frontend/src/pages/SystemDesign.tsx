@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { Routes, Route, useNavigate, useParams } from 'react-router-dom';
+import React from 'react';
+import { Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { ProgressRing } from '@/components/ui/ProgressRing';
-import { architectureTopics } from '@/data/architectureData';
+import { architectureTopics } from '@/data/systemDesignData';
+import { aiSystemDesignTopics } from '@/data/aiSystemDesignData';
 import { Scale, Grid3X3, Database, Router, MessageSquare, Split, Zap, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -19,13 +20,8 @@ const iconMap = {
   Eye
 };
 
-const difficultyColors = {
-  Beginner: 'bg-green-500',
-  Intermediate: 'bg-yellow-500',
-  Advanced: 'bg-red-500'
-};
 
-// Architecture Topic Card Component
+// System Design Topic Card Component
 const TopicCard: React.FC<{ topic: typeof architectureTopics[0] }> = ({ topic }) => {
   const navigate = useNavigate();
   const IconComponent = iconMap[topic.icon as keyof typeof iconMap];
@@ -37,7 +33,7 @@ const TopicCard: React.FC<{ topic: typeof architectureTopics[0] }> = ({ topic })
     >
       <Card
         className="h-full cursor-pointer group"
-        onClick={() => navigate(`/architecture/${topic.id}`)}
+        onClick={() => navigate(`/system-design/${topic.id}`)}
       >
         <CardHeader>
           <div className="flex items-start justify-between mb-3">
@@ -82,7 +78,9 @@ const TopicCard: React.FC<{ topic: typeof architectureTopics[0] }> = ({ topic })
 const TopicDetail: React.FC = () => {
   const { topicId } = useParams();
   const navigate = useNavigate();
-  const topic = architectureTopics.find(t => t.id === topicId);
+  const location = useLocation();
+const isAI = location.pathname.includes('/ai');
+const topic = (isAI ? aiSystemDesignTopics : architectureTopics).find(t => t.id === topicId);
 
   if (!topic) {
     return (
@@ -92,10 +90,10 @@ const TopicDetail: React.FC = () => {
             Topic not found
           </h2>
           <button
-            onClick={() => navigate('/architecture')}
+            onClick={() => navigate('/system-design')}
             className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
-            Back to Architecture
+            Back to System Design
           </button>
         </div>
       </div>
@@ -107,10 +105,10 @@ const TopicDetail: React.FC = () => {
       {/* Header */}
       <div className="mb-8">
         <button
-          onClick={() => navigate('/architecture')}
+          onClick={() => navigate('/system-design')}
           className="mb-4 px-4 py-2 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
         >
-          ← Back to Architecture
+          ← Back to System Design
         </button>
 
         <div className="flex items-start justify-between">
@@ -281,14 +279,36 @@ const TopicDetail: React.FC = () => {
   );
 };
 
-// Main Architecture Page Component
-const Architecture: React.FC = () => {
+// Main System Design Page Component
+const SystemDesign: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Detect if we're on the AI system design path
+  const isAIPath = location.pathname.startsWith('/system-design/ai');
+  const topics = isAIPath ? aiSystemDesignTopics : architectureTopics;
+  
   return (
     <Routes>
       <Route
         index
         element={
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Tab Switcher */}
+            <div className="flex justify-center mb-6 space-x-4">
+              <button
+                className={!isAIPath ? 'px-4 py-2 bg-primary-600 text-white rounded' : 'px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded'}
+                onClick={() => navigate('/system-design')}
+              >
+                System Design
+              </button>
+              <button
+                className={isAIPath ? 'px-4 py-2 bg-primary-600 text-white rounded' : 'px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded'}
+                onClick={() => navigate('/system-design/ai')}
+              >
+                AI System Design
+              </button>
+            </div>
             {/* Hero Section */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -297,10 +317,12 @@ const Architecture: React.FC = () => {
               className="text-center mb-12"
             >
               <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-4">
-                Master <span className="text-primary-600 dark:text-primary-400">System Design</span>
+                Master <span className="text-primary-600 dark:text-primary-400">{isAIPath ? 'AI ' : ''}System Design</span>
               </h1>
               <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
-                Learn scalable architecture patterns, distributed systems, and design principles used by top tech companies.
+                {isAIPath 
+                  ? 'Learn AI-specific system design patterns, ML infrastructure, and scalable AI architectures.'
+                  : 'Learn scalable architecture patterns, distributed systems, and design principles used by top tech companies.'}
               </p>
             </motion.div>
 
@@ -311,14 +333,14 @@ const Architecture: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
-              {architectureTopics.map((topic, index) => (
+              {topics.map((topic, index) => (
                 <motion.div
                   key={topic.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
                 >
-                  <TopicCard topic={topic} />
+                  <TopicCard topic={topic as any} />
                 </motion.div>
               ))}
             </motion.div>
@@ -326,8 +348,61 @@ const Architecture: React.FC = () => {
         }
       />
       <Route path=":topicId" element={<TopicDetail />} />
+      <Route path="ai" element={
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Tab Switcher */}
+          <div className="flex justify-center mb-6 space-x-4">
+            <button
+              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded"
+              onClick={() => navigate('/system-design')}
+            >
+              System Design
+            </button>
+            <button
+              className="px-4 py-2 bg-primary-600 text-white rounded"
+              onClick={() => navigate('/system-design/ai')}
+            >
+              AI System Design
+            </button>
+          </div>
+          {/* Hero Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
+          >
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-4">
+              Master <span className="text-primary-600 dark:text-primary-400">AI System Design</span>
+            </h1>
+            <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
+              Learn AI-specific system design patterns, ML infrastructure, and scalable AI architectures.
+            </p>
+          </motion.div>
+
+          {/* Topics Grid */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {aiSystemDesignTopics.map((topic, index) => (
+              <motion.div
+                key={topic.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+              >
+                <TopicCard topic={topic as any} />
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      } />
+      <Route path="ai/:topicId" element={<TopicDetail />} />
     </Routes>
   );
 };
 
-export default Architecture;
+export default SystemDesign;

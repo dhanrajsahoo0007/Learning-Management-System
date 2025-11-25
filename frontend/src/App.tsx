@@ -7,7 +7,7 @@ import { TopTabs } from '@/components/layout/TopTabs';
 import { Grid3X3, Code, Award } from 'lucide-react';
 
 // Lazy load page components
-const Architecture = lazy(() => import('@/pages/Architecture'));
+const SystemDesign = lazy(() => import('@/pages/SystemDesign'));
 const DSA = lazy(() => import('@/pages/DSA'));
 const Certifications = lazy(() => import('@/pages/Certifications'));
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
@@ -25,9 +25,15 @@ const PageLoader: React.FC = () => (
 const App: React.FC = () => {
   const tabs = [
     {
-      id: 'architecture',
-      label: 'Architecture',
-      path: '/architecture',
+      id: 'system-design',
+      label: 'System Design',
+      path: '/system-design',
+      icon: <Grid3X3 className="w-4 h-4" />
+    },
+    {
+      id: 'ai-system-design',
+      label: 'AI System Design',
+      path: '/system-design/ai',
       icon: <Grid3X3 className="w-4 h-4" />
     },
     {
@@ -68,17 +74,30 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/architecture/*"
-              element={
-                <MainLayout
-                  showTopTabs={true}
-                  topTabs={<TopTabs tabs={tabs} />}
-                >
-                  <Suspense fallback={<PageLoader />}>
-                    <Architecture />
-                  </Suspense>
-                </MainLayout>
-              }
+              path="/system-design/*"
+                element={
+                  <MainLayout
+                    showTopTabs={true}
+                    topTabs={<TopTabs tabs={tabs} />}
+                  >
+                    <Suspense fallback={<PageLoader />}> 
+                      <SystemDesign />
+                    </Suspense>
+                  </MainLayout>
+                }
+            />
+            <Route
+              path="/system-design/ai/*"
+                element={
+                  <MainLayout
+                    showTopTabs={true}
+                    topTabs={<TopTabs tabs={tabs} />}
+                  >
+                    <Suspense fallback={<PageLoader />}> 
+                      <SystemDesign />
+                    </Suspense>
+                  </MainLayout>
+                }
             />
             <Route
               path="/dsa/*"
