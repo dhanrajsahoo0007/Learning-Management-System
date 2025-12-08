@@ -8,7 +8,7 @@ export const systemDesignService = {
   },
 
   getAITopics: async (): Promise<ArchitectureTopic[]> => {
-    const response = await apiClient.get<{ data: ArchitectureTopic[] }>('/system-design/ai-topics');
+    const response = await apiClient.get<{ data: ArchitectureTopic[] }>('/ai-system-design/topics');
     return response.data.data;
   },
 

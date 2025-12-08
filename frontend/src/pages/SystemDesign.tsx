@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { ArchitectureTopic } from '@/data/systemDesignData';
 import { systemDesignService } from '@/api/systemDesign';
-import { Scale, Grid3X3, Database, Router, MessageSquare, Split, Zap, Eye } from 'lucide-react';
+import { Scale, Grid3X3, Database, Router, MessageSquare, Split, Zap, Eye, Brain, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const iconMap = {
@@ -17,7 +17,9 @@ const iconMap = {
   MessageSquare,
   Split,
   Zap,
-  Eye
+  Eye,
+  Brain,
+  Search
 };
 
 

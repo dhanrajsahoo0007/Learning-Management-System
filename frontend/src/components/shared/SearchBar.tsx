@@ -61,6 +61,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         >
           <Search className="w-5 h-5 text-gray-400 ml-3" />
           <input
+            id="global-search"
+            name="q"
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

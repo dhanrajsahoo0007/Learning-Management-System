@@ -1,0 +1,22 @@
+Dijkstra's Algorithm:
+
+    Works on graphs with non-negative edge weights
+    More efficient for sparse graphs
+    Time complexity: O(V log V + E) with a priority queue
+    Finds shortest path from a single source to all other vertices
+    Uses a greedy approach
+
+Bellman-Ford Algorithm:
+
+    Works on graphs with negative edge weights (except negative cycles)
+    Can detect negative cycles
+    Less efficient, but more versatile
+    Time complexity: O(VE)
+    Finds shortest paths from a single source to all other vertices
+    Uses dynamic programming approach
+
+Key differences:
+
+    Edge weights: Dijkstra's requires non-negative weights, Bellman-Ford allows negative weights
+    Efficiency: Dijkstra's is faster for most cases, especially sparse graphs
+    Negative cycles: Bellman-Ford can detect them, Dijkstra's cannot

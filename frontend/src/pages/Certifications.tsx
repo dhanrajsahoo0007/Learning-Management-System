@@ -324,7 +324,7 @@ const Certifications: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState<string>('All');
   const [selectedLevel, setSelectedLevel] = useState<string>('All');
   const [certifications, setCertifications] = useState<Certification[]>([]);
-  const [providers, setProviders] = useState<string[]>(['All']);
+  const [providers, setProviders] = useState<any[]>(['All']);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -335,7 +335,9 @@ const Certifications: React.FC = () => {
           certificationService.getProviders()
         ]);
         setCertifications(certsData);
-        setProviders(['All', ...providersData]);
+        // providersData is an array of {name: string, count: number} objects
+        const providerNames = providersData.map((p: any) => typeof p === 'string' ? p : p.name);
+        setProviders(['All', ...providerNames]);
       } catch (error) {
         console.error('Failed to fetch certifications:', error);
       } finally {
@@ -398,6 +400,8 @@ const Certifications: React.FC = () => {
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
+                      id="cert-search"
+                      name="search"
                       type="text"
                       placeholder="Search certifications..."
                       value={searchQuery}
@@ -410,19 +414,26 @@ const Certifications: React.FC = () => {
                 {/* Provider Filter */}
                 <div className="md:w-48">
                   <select
+                    id="provider-filter"
+                    name="provider"
                     value={selectedProvider}
                     onChange={(e) => setSelectedProvider(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus-ring"
                   >
-                    {providers.map(provider => (
-                      <option key={provider} value={provider}>{provider}</option>
-                    ))}
+                    {providers.map(provider => {
+                      const providerName = typeof provider === 'string' ? provider : provider.name;
+                      return (
+                        <option key={providerName} value={providerName}>{providerName}</option>
+                      );
+                    })}
                   </select>
                 </div>
 
                 {/* Level Filter */}
                 <div className="md:w-48">
                   <select
+                    id="level-filter"
+                    name="level"
                     value={selectedLevel}
                     onChange={(e) => setSelectedLevel(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus-ring"
