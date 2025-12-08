@@ -23,7 +23,6 @@ echo ""
 echo "Starting API Gateway on port 8080..."
 cd services/gateway
 export PORT=8080
-export AUTH_SERVICE_URL=http://localhost:8081
 export DSA_SERVICE_URL=http://localhost:8082
 export SYSTEM_DESIGN_SERVICE_URL=http://localhost:8083
 export AI_SYSTEM_DESIGN_SERVICE_URL=http://localhost:8084
@@ -34,13 +33,6 @@ go run main.go > ../../logs/gateway.log 2>&1 &
 echo "✅ Gateway started (PID: $!)"
 cd ../..
 
-# Start Auth Service (8081)
-echo "Starting Auth Service on port 8081..."
-cd services/auth
-export PORT=8081
-go run main.go > ../../logs/auth.log 2>&1 &
-echo "✅ Auth Service started (PID: $!)"
-cd ../..
 
 # Start DSA Service (8082)
 echo "Starting DSA Service on port 8082..."
@@ -87,12 +79,11 @@ echo "✅ All microservices started!"
 echo ""
 echo "📊 Service Status:"
 echo "  - API Gateway:        http://localhost:8080"
-echo "  - Auth Service:       http://localhost:8081"
 echo "  - DSA Service:        http://localhost:8082"
 echo "  - System Design:      http://localhost:8083"
 echo "  - AI System Design:   http://localhost:8084"
 echo "  - Certifications:     http://localhost:8085"
-echo "  - Gamification:       http://localhost:8086"
+echo "  - Gamification:       http://localhost:8086 (Protected)"
 echo ""
 echo "📝 Logs are in the logs/ directory"
 echo ""

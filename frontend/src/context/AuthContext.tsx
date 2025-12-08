@@ -1,12 +1,17 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, authService } from '../api/auth';
-import { setAuthToken, getAuthToken, logout as apiLogout } from '../api/client';
+import React, { createContext, useContext, ReactNode } from 'react';
+import { useUser, useAuth as useClerkAuth } from '@clerk/clerk-react';
+
+// Keep the same User interface for backward compatibility
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  created_at: string;
+}
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (data: any) => Promise<void>;
-  register: (data: any) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -14,50 +19,25 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    const token = getAuthToken();
-    if (token) {
-      try {
-        const userData = await authService.getCurrentUser();
-        setUser(userData);
-      } catch (error) {
-        console.error('Failed to fetch user:', error);
-        setAuthToken(''); // Clear invalid token
-      }
-    }
-    setLoading(false);
-  };
-
-  const login = async (data: any) => {
-    const response = await authService.login(data);
-    setAuthToken(response.token);
-    setUser(response.user);
-  };
-
-  const register = async (data: any) => {
-    const response = await authService.register(data);
-    setAuthToken(response.token);
-    setUser(response.user);
-  };
+  const { user, isLoaded } = useUser();
+  const { signOut } = useClerkAuth();
 
   const logout = () => {
-    apiLogout();
-    setUser(null);
+    signOut();
   };
+
+  // Transform Clerk user to our User interface
+  const transformedUser: User | null = user ? {
+    id: user.id,
+    email: user.primaryEmailAddress?.emailAddress || '',
+    name: user.fullName || user.firstName || '',
+    created_at: user.createdAt?.toISOString() || new Date().toISOString()
+  } : null;
 
   return (
     <AuthContext.Provider value={{ 
-      user, 
-      loading, 
-      login, 
-      register, 
+      user: transformedUser, 
+      loading: !isLoaded, 
       logout,
       isAuthenticated: !!user 
     }}>

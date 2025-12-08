@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { GamificationProvider } from '@/context/GamificationContext';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -12,6 +13,8 @@ const DSA = lazy(() => import('@/pages/DSA'));
 const Certifications = lazy(() => import('@/pages/Certifications'));
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
 import Home from '@/pages/Home';
+import SignInPage from '@/pages/SignIn';
+import SignUpPage from '@/pages/SignUp';
 
 // Loading component
 const PageLoader: React.FC = () => (
@@ -53,8 +56,7 @@ const App: React.FC = () => {
   return (
     <ThemeProvider>
       <GamificationProvider>
-        <Router>
-          <Routes>
+        <Routes>
             <Route
               path="/"
               element={
@@ -63,14 +65,26 @@ const App: React.FC = () => {
                 </MainLayout>
               }
             />
+            {/* Auth Routes */}
+            <Route path="/sign-in/*" element={<SignInPage />} />
+            <Route path="/sign-up/*" element={<SignUpPage />} />
+            
+            {/* Protected Dashboard Route */}
             <Route
               path="/dashboard"
               element={
-                <MainLayout showBottomNav={true} showTopTabs={false}>
-                  <Suspense fallback={<PageLoader />}>
-                    <Dashboard />
-                  </Suspense>
-                </MainLayout>
+                <>
+                  <SignedIn>
+                    <MainLayout showBottomNav={true} showTopTabs={false}>
+                      <Suspense fallback={<PageLoader />}>
+                        <Dashboard />
+                      </Suspense>
+                    </MainLayout>
+                  </SignedIn>
+                  <SignedOut>
+                    <RedirectToSignIn />
+                  </SignedOut>
+                </>
               }
             />
             <Route
@@ -127,8 +141,7 @@ const App: React.FC = () => {
             />
             {/* Redirect unknown routes to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Router>
+        </Routes>
       </GamificationProvider>
     </ThemeProvider>
   );

@@ -20,7 +20,6 @@ import (
 
 // Service URLs
 var (
-	authServiceURL           = getEnv("AUTH_SERVICE_URL", "http://localhost:8081")
 	dsaServiceURL            = getEnv("DSA_SERVICE_URL", "http://localhost:8082")
 	systemDesignServiceURL   = getEnv("SYSTEM_DESIGN_SERVICE_URL", "http://localhost:8083")
 	aiSystemDesignServiceURL = getEnv("AI_SYSTEM_DESIGN_SERVICE_URL", "http://localhost:8084")
@@ -77,12 +76,7 @@ func main() {
 	// API routes with proxy
 	api := app.Group("/api")
 
-	// Auth routes -> Auth Service
-	api.All("/auth/*", func(c *fiber.Ctx) error {
-		url := authServiceURL + c.OriginalURL()[9:] // Remove "/api/auth" (9 chars)
-		return proxy.Do(c, url)
-	})
-
+	// Public routes (no authentication required)
 	// DSA routes -> DSA Service
 	api.All("/dsa/*", func(c *fiber.Ctx) error {
 		url := dsaServiceURL + c.OriginalURL()[8:] // Remove "/api/dsa" (8 chars)
@@ -107,14 +101,17 @@ func main() {
 		return proxy.Do(c, url)
 	})
 
-	// Gamification routes -> Gamification Service
-	api.All("/gamification/*", func(c *fiber.Ctx) error {
+	// Protected routes (require Clerk authentication)
+	protected := api.Group("", middleware.ClerkAuth())
+
+	// Gamification routes -> Gamification Service (Protected)
+	protected.All("/gamification/*", func(c *fiber.Ctx) error {
 		url := gamificationServiceURL + c.OriginalURL()[18:] // Remove "/api/gamification" (18 chars)
 		return proxy.Do(c, url)
 	})
 
-	// Progress tracking -> Gamification Service
-	api.All("/progress", func(c *fiber.Ctx) error {
+	// Progress tracking -> Gamification Service (Protected)
+	protected.All("/progress", func(c *fiber.Ctx) error {
 		url := gamificationServiceURL + "/progress"
 		return proxy.Do(c, url)
 	})
@@ -125,12 +122,11 @@ func main() {
 		log.Printf("🚀 API Gateway starting on http://localhost%s", addr)
 		log.Printf("📝 Environment: %s", cfg.Service.Env)
 		log.Printf("🔗 Routing to microservices:")
-		log.Printf("   - Auth: %s", authServiceURL)
 		log.Printf("   - DSA: %s", dsaServiceURL)
 		log.Printf("   - System Design: %s", systemDesignServiceURL)
 		log.Printf("   - AI System Design: %s", aiSystemDesignServiceURL)
 		log.Printf("   - Certifications: %s", certificationsServiceURL)
-		log.Printf("   - Gamification: %s", gamificationServiceURL)
+		log.Printf("   - Gamification: %s (Protected)", gamificationServiceURL)
 
 		if err := app.Listen(addr); err != nil {
 			log.Fatalf("Failed to start server: %v", err)
