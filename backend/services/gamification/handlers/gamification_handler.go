@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"log"
+
 	"github.com/gofiber/fiber/v2"
 
-	"github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/shared/middleware"
 	"github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/gamification/models"
 	"github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/gamification/repository"
+	"github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/shared/middleware"
 	"github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/shared/utils"
 )
 
@@ -21,14 +23,21 @@ func NewGamificationHandler(gamificationRepo *repository.GamificationRepository)
 
 // GetStats handles GET /api/gamification/stats (protected)
 func (h *GamificationHandler) GetStats(c *fiber.Ctx) error {
-	userID, ok := middleware.GetUserID(c)
+	clerkUserID, ok := middleware.GetClerkUserID(c)
 	if !ok {
-		return utils.Unauthorized(c, "User not authenticated")
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "User not authenticated")
+	}
+
+	userID, err := h.gamificationRepo.GetInternalUserID(c.Context(), clerkUserID)
+	if err != nil {
+		log.Printf("❌ GetInternalUserID Error: %v", err)
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to resolve user")
 	}
 
 	stats, err := h.gamificationRepo.GetStats(c.Context(), userID)
 	if err != nil {
-		return utils.InternalErrorResponse(c, "Failed to fetch gamification stats")
+		log.Printf("❌ GetStats Error: %v", err)
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to fetch gamification stats")
 	}
 
 	return utils.SuccessResponse(c, stats)
@@ -36,9 +45,15 @@ func (h *GamificationHandler) GetStats(c *fiber.Ctx) error {
 
 // AddXP handles POST /api/gamification/xp (protected)
 func (h *GamificationHandler) AddXP(c *fiber.Ctx) error {
-	userID, ok := middleware.GetUserID(c)
+	clerkUserID, ok := middleware.GetClerkUserID(c)
 	if !ok {
-		return utils.Unauthorized(c, "User not authenticated")
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "User not authenticated")
+	}
+
+	userID, err := h.gamificationRepo.GetInternalUserID(c.Context(), clerkUserID)
+	if err != nil {
+		log.Printf("❌ GetInternalUserID Error: %v", err)
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to resolve user")
 	}
 
 	var req models.AddXPRequest
@@ -47,12 +62,13 @@ func (h *GamificationHandler) AddXP(c *fiber.Ctx) error {
 	}
 
 	if req.Amount <= 0 {
-		return utils.ValidationError(c, fiber.Map{"amount": "Amount must be positive"})
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Amount must be positive")
 	}
 
 	stats, err := h.gamificationRepo.AddXP(c.Context(), userID, req.Amount)
 	if err != nil {
-		return utils.InternalErrorResponse(c, "Failed to add XP")
+		log.Printf("❌ AddXP Error: %v", err)
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to add XP")
 	}
 
 	return utils.SuccessResponse(c, stats)
@@ -60,9 +76,15 @@ func (h *GamificationHandler) AddXP(c *fiber.Ctx) error {
 
 // UnlockAchievement handles POST /api/gamification/achievements (protected)
 func (h *GamificationHandler) UnlockAchievement(c *fiber.Ctx) error {
-	userID, ok := middleware.GetUserID(c)
+	clerkUserID, ok := middleware.GetClerkUserID(c)
 	if !ok {
-		return utils.Unauthorized(c, "User not authenticated")
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "User not authenticated")
+	}
+
+	userID, err := h.gamificationRepo.GetInternalUserID(c.Context(), clerkUserID)
+	if err != nil {
+		log.Printf("❌ GetInternalUserID Error: %v", err)
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to resolve user")
 	}
 
 	var req models.UnlockAchievementRequest
@@ -71,7 +93,7 @@ func (h *GamificationHandler) UnlockAchievement(c *fiber.Ctx) error {
 	}
 
 	if req.AchievementID == "" || req.Title == "" {
-		return utils.ValidationError(c, fiber.Map{"achievement": "Achievement ID and title are required"})
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Achievement ID and title are required")
 	}
 
 	achievement := &models.Achievement{
@@ -84,7 +106,8 @@ func (h *GamificationHandler) UnlockAchievement(c *fiber.Ctx) error {
 	}
 
 	if err := h.gamificationRepo.UnlockAchievement(c.Context(), achievement); err != nil {
-		return utils.InternalErrorResponse(c, "Failed to unlock achievement")
+		log.Printf("❌ UnlockAchievement Error: %v", err)
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to unlock achievement")
 	}
 
 	return utils.SuccessResponse(c, achievement)
@@ -92,14 +115,21 @@ func (h *GamificationHandler) UnlockAchievement(c *fiber.Ctx) error {
 
 // UpdateStreak handles POST /api/gamification/streak (protected)
 func (h *GamificationHandler) UpdateStreak(c *fiber.Ctx) error {
-	userID, ok := middleware.GetUserID(c)
+	clerkUserID, ok := middleware.GetClerkUserID(c)
 	if !ok {
-		return utils.Unauthorized(c, "User not authenticated")
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "User not authenticated")
+	}
+
+	userID, err := h.gamificationRepo.GetInternalUserID(c.Context(), clerkUserID)
+	if err != nil {
+		log.Printf("❌ GetInternalUserID Error: %v", err)
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to resolve user")
 	}
 
 	stats, err := h.gamificationRepo.UpdateStreak(c.Context(), userID)
 	if err != nil {
-		return utils.InternalErrorResponse(c, "Failed to update streak")
+		log.Printf("❌ UpdateStreak Error: %v", err)
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update streak")
 	}
 
 	return utils.SuccessResponse(c, stats)
@@ -107,9 +137,15 @@ func (h *GamificationHandler) UpdateStreak(c *fiber.Ctx) error {
 
 // UpdateProgress handles POST /api/progress (protected)
 func (h *GamificationHandler) UpdateProgress(c *fiber.Ctx) error {
-	userID, ok := middleware.GetUserID(c)
+	clerkUserID, ok := middleware.GetClerkUserID(c)
 	if !ok {
-		return utils.Unauthorized(c, "User not authenticated")
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "User not authenticated")
+	}
+
+	userID, err := h.gamificationRepo.GetInternalUserID(c.Context(), clerkUserID)
+	if err != nil {
+		log.Printf("❌ GetInternalUserID Error: %v", err)
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to resolve user")
 	}
 
 	var req models.UpdateProgressRequest
@@ -118,7 +154,7 @@ func (h *GamificationHandler) UpdateProgress(c *fiber.Ctx) error {
 	}
 
 	if req.TopicID == "" || req.TopicType == "" {
-		return utils.ValidationError(c, fiber.Map{"progress": "Topic ID and type are required"})
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Topic ID and type are required")
 	}
 
 	progress := &models.UserProgress{
@@ -130,7 +166,8 @@ func (h *GamificationHandler) UpdateProgress(c *fiber.Ctx) error {
 	}
 
 	if err := h.gamificationRepo.UpdateProgress(c.Context(), progress); err != nil {
-		return utils.InternalErrorResponse(c, "Failed to update progress")
+		log.Printf("❌ UpdateProgress Error: %v", err)
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update progress")
 	}
 
 	return utils.SuccessResponse(c, progress)

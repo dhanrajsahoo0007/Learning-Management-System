@@ -15,6 +15,7 @@ fi
 # Set service-specific environment variables
 export DATABASE_URL=$TURSO_DATABASE_URL
 export DATABASE_AUTH_TOKEN=$TURSO_AUTH_TOKEN
+export CLERK_SECRET_KEY=$CLERK_SECRET_KEY
 
 echo "🚀 Starting all microservices..."
 echo ""

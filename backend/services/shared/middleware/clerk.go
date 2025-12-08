@@ -57,7 +57,7 @@ func ClerkAuth() fiber.Handler {
 		}
 
 		// Store user ID in context for use in handlers
-		c.Locals("userId", claims.Subject)
+		c.Locals("clerk_user_id", claims.Subject)
 		c.Locals("clerkClaims", claims)
 
 		return c.Next()
@@ -100,4 +100,10 @@ func OptionalClerkAuth() fiber.Handler {
 
 		return c.Next()
 	}
+}
+
+// GetClerkUserID extracts Clerk user ID from context
+func GetClerkUserID(c *fiber.Ctx) (string, bool) {
+	userID, ok := c.Locals("clerk_user_id").(string)
+	return userID, ok
 }

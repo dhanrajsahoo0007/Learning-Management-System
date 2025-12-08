@@ -39,6 +39,35 @@ func main() {
 
 	log.Println("✅ Gamification Service connected to database")
 
+	// Run migration to add clerk_user_id if missing
+	log.Println("🔄 Checking/Running migration for clerk_user_id...")
+	// We ignore errors here as the column might already exist
+	_, err = db.Exec("ALTER TABLE users ADD COLUMN clerk_user_id TEXT")
+	if err != nil {
+		log.Printf("ℹ️ Migration note (users): %v", err)
+	}
+	_, err = db.Exec("CREATE INDEX IF NOT EXISTS idx_users_clerk_id ON users(clerk_user_id)")
+	if err != nil {
+		log.Printf("⚠️ Migration warning (index): %v", err)
+	}
+
+	// DEBUG: Print users table info
+	rows, err := db.Query("PRAGMA table_info(users)")
+	if err == nil {
+		log.Println("📊 Users Table Schema:")
+		var cid int
+		var name, type_ string
+		var notnull, pk int
+		var dflt_value *string
+		for rows.Next() {
+			rows.Scan(&cid, &name, &type_, &notnull, &dflt_value, &pk)
+			log.Printf("Col: %s (%s) NN:%d PK:%d", name, type_, notnull, pk)
+		}
+		rows.Close()
+	} else {
+		log.Printf("❌ Failed to query table info: %v", err)
+	}
+
 	// Initialize repository
 	gamificationRepo := repository.NewGamificationRepository(db)
 
@@ -77,7 +106,7 @@ func main() {
 	})
 
 	// Auth middleware
-	authMiddleware := middleware.AuthMiddleware(cfg.JWT.Secret)
+	authMiddleware := middleware.ClerkAuth()
 
 	// Gamification routes (protected)
 	app.Get("/stats", authMiddleware, gamificationHandler.GetStats)

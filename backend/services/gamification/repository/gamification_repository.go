@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/shared/database"
 	"github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/gamification/models"
+	"github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/shared/database"
 )
 
 // GamificationRepository handles gamification database operations
@@ -18,6 +18,47 @@ type GamificationRepository struct {
 // NewGamificationRepository creates a new gamification repository
 func NewGamificationRepository(db *database.DB) *GamificationRepository {
 	return &GamificationRepository{db: db}
+}
+
+// GetInternalUserID retrieves the internal integer user ID from a Clerk user ID
+func (r *GamificationRepository) GetInternalUserID(ctx context.Context, clerkUserID string) (int64, error) {
+	query := `SELECT id FROM users WHERE clerk_user_id = ?`
+	var id int64
+	err := r.db.QueryRowContext(ctx, query, clerkUserID).Scan(&id)
+	if err == sql.ErrNoRows {
+		// If user not found, we might want to create them if this is a first-time access
+		// For now, let's try to create a placeholder user if they don't exist
+		// This handles the case where webhook hasn't fired yet
+		return r.createInternalUser(ctx, clerkUserID)
+	}
+	if err != nil {
+		return 0, fmt.Errorf("failed to get internal user ID: %w", err)
+	}
+	return id, nil
+}
+
+// createInternalUser creates a new internal user record from Clerk ID
+func (r *GamificationRepository) createInternalUser(ctx context.Context, clerkUserID string) (int64, error) {
+	// Simple user creation with placeholder email/name since we only need ID for stats
+	// Webhook will update details later or we can fetch from Clerk API
+	query := `INSERT INTO users (clerk_user_id, email, name, password_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`
+	// Using placeholder email as clerk_ID@placeholder.local to avoid constraint violations if email is unique
+	placeholderEmail := fmt.Sprintf("%s@placeholder.local", clerkUserID)
+	placeholderName := "New User"
+	placeholderHash := "clerk_auth_placeholder"
+	now := time.Now()
+
+	result, err := r.db.ExecContext(ctx, query, clerkUserID, placeholderEmail, placeholderName, placeholderHash, now, now)
+	if err != nil {
+		return 0, fmt.Errorf("failed to create internal user: %w", err)
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get last insert ID: %w", err)
+	}
+
+	return id, nil
 }
 
 // GetStats retrieves gamification stats for a user
