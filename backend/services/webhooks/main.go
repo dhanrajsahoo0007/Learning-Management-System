@@ -11,18 +11,17 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 
-	"github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/auth/handlers"
-	"github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/auth/repository"
 	"github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/shared/config"
 	"github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/shared/database"
 	"github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/shared/middleware"
 	"github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/shared/models"
 	"github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/shared/utils"
+	"github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/webhooks/handlers"
 )
 
 func main() {
 	// Load configuration
-	cfg, err := config.Load("auth-service")
+	cfg, err := config.Load("webhooks-service")
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
@@ -37,17 +36,14 @@ func main() {
 	}
 	defer db.Close()
 
-	log.Println("✅ Auth Service connected to database")
-
-	// Initialize repository
-	userRepo := repository.NewUserRepository(db)
+	log.Println("✅ Webhooks Service connected to database")
 
 	// Initialize handler
-	authHandler := handlers.NewAuthHandler(userRepo, cfg.JWT.Secret, cfg.JWT.Expiry)
+	webhookHandler := handlers.NewClerkWebhookHandler(db)
 
 	// Create Fiber app
 	app := fiber.New(fiber.Config{
-		AppName:      "Auth Service",
+		AppName:      "Webhooks Service",
 		ServerHeader: "Fiber",
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			code := fiber.StatusInternalServerError
@@ -69,22 +65,20 @@ func main() {
 			return utils.ErrorResponse(c, fiber.StatusServiceUnavailable, "Database unhealthy")
 		}
 		return utils.SuccessResponse(c, models.HealthStatus{
-			Service:  "auth-service",
+			Service:  "webhooks-service",
 			Status:   "healthy",
 			Database: "connected",
 			Version:  "1.0.0",
 		})
 	})
 
-	// Auth routes
-	app.Post("/register", authHandler.Register)
-	app.Post("/login", authHandler.Login)
-	app.Get("/me", middleware.AuthMiddleware(cfg.JWT.Secret), authHandler.Me)
+	// Webhook routes
+	app.Post("/clerk", webhookHandler.HandleWebhook)
 
 	// Start server in a goroutine
 	go func() {
 		addr := fmt.Sprintf(":%s", cfg.Service.Port)
-		log.Printf("🚀 Auth Service starting on http://localhost%s", addr)
+		log.Printf("🚀 Webhooks Service starting on http://localhost%s", addr)
 		log.Printf("📝 Environment: %s", cfg.Service.Env)
 
 		if err := app.Listen(addr); err != nil {
@@ -97,10 +91,10 @@ func main() {
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	<-quit
 
-	log.Println("🛑 Shutting down Auth Service...")
+	log.Println("🛑 Shutting down Webhooks Service...")
 	if err := app.Shutdown(); err != nil {
 		log.Fatalf("Server forced to shutdown: %v", err)
 	}
 
-	log.Println("✅ Auth Service exited gracefully")
+	log.Println("✅ Webhooks Service exited gracefully")
 }
