@@ -41,12 +41,14 @@ func (r *GamificationRepository) GetInternalUserID(ctx context.Context, clerkUse
 func (r *GamificationRepository) createInternalUser(ctx context.Context, clerkUserID string) (int64, error) {
 	// Simple user creation with placeholder email/name since we only need ID for stats
 	// Webhook will update details later or we can fetch from Clerk API
-	query := `INSERT INTO users (clerk_user_id, email, full_name, role) VALUES (?, ?, ?, 'user')`
-	// Using placeholder email as clerk_ID@placeholder.com to avoid constraint violations if email is unique
+	query := `INSERT INTO users (clerk_user_id, email, name, password_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`
+	// Using placeholder email as clerk_ID@placeholder.local to avoid constraint violations if email is unique
 	placeholderEmail := fmt.Sprintf("%s@placeholder.local", clerkUserID)
 	placeholderName := "New User"
+	placeholderHash := "clerk_auth_placeholder"
+	now := time.Now()
 
-	result, err := r.db.ExecContext(ctx, query, clerkUserID, placeholderEmail, placeholderName)
+	result, err := r.db.ExecContext(ctx, query, clerkUserID, placeholderEmail, placeholderName, placeholderHash, now, now)
 	if err != nil {
 		return 0, fmt.Errorf("failed to create internal user: %w", err)
 	}

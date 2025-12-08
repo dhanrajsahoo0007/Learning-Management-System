@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"log"
+
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/gamification/models"
@@ -28,11 +30,13 @@ func (h *GamificationHandler) GetStats(c *fiber.Ctx) error {
 
 	userID, err := h.gamificationRepo.GetInternalUserID(c.Context(), clerkUserID)
 	if err != nil {
+		log.Printf("❌ GetInternalUserID Error: %v", err)
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to resolve user")
 	}
 
 	stats, err := h.gamificationRepo.GetStats(c.Context(), userID)
 	if err != nil {
+		log.Printf("❌ GetStats Error: %v", err)
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to fetch gamification stats")
 	}
 
@@ -48,6 +52,7 @@ func (h *GamificationHandler) AddXP(c *fiber.Ctx) error {
 
 	userID, err := h.gamificationRepo.GetInternalUserID(c.Context(), clerkUserID)
 	if err != nil {
+		log.Printf("❌ GetInternalUserID Error: %v", err)
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to resolve user")
 	}
 
@@ -62,6 +67,7 @@ func (h *GamificationHandler) AddXP(c *fiber.Ctx) error {
 
 	stats, err := h.gamificationRepo.AddXP(c.Context(), userID, req.Amount)
 	if err != nil {
+		log.Printf("❌ AddXP Error: %v", err)
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to add XP")
 	}
 
@@ -77,6 +83,7 @@ func (h *GamificationHandler) UnlockAchievement(c *fiber.Ctx) error {
 
 	userID, err := h.gamificationRepo.GetInternalUserID(c.Context(), clerkUserID)
 	if err != nil {
+		log.Printf("❌ GetInternalUserID Error: %v", err)
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to resolve user")
 	}
 
@@ -99,6 +106,7 @@ func (h *GamificationHandler) UnlockAchievement(c *fiber.Ctx) error {
 	}
 
 	if err := h.gamificationRepo.UnlockAchievement(c.Context(), achievement); err != nil {
+		log.Printf("❌ UnlockAchievement Error: %v", err)
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to unlock achievement")
 	}
 
@@ -114,11 +122,13 @@ func (h *GamificationHandler) UpdateStreak(c *fiber.Ctx) error {
 
 	userID, err := h.gamificationRepo.GetInternalUserID(c.Context(), clerkUserID)
 	if err != nil {
+		log.Printf("❌ GetInternalUserID Error: %v", err)
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to resolve user")
 	}
 
 	stats, err := h.gamificationRepo.UpdateStreak(c.Context(), userID)
 	if err != nil {
+		log.Printf("❌ UpdateStreak Error: %v", err)
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update streak")
 	}
 
@@ -134,6 +144,7 @@ func (h *GamificationHandler) UpdateProgress(c *fiber.Ctx) error {
 
 	userID, err := h.gamificationRepo.GetInternalUserID(c.Context(), clerkUserID)
 	if err != nil {
+		log.Printf("❌ GetInternalUserID Error: %v", err)
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to resolve user")
 	}
 
@@ -155,6 +166,7 @@ func (h *GamificationHandler) UpdateProgress(c *fiber.Ctx) error {
 	}
 
 	if err := h.gamificationRepo.UpdateProgress(c.Context(), progress); err != nil {
+		log.Printf("❌ UpdateProgress Error: %v", err)
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update progress")
 	}
 

@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -106,8 +107,12 @@ func main() {
 
 	// Gamification routes -> Gamification Service (Protected)
 	protected.All("/gamification/*", func(c *fiber.Ctx) error {
-		url := gamificationServiceURL + c.OriginalURL()[18:] // Remove "/api/gamification" (18 chars)
-		return proxy.Do(c, url)
+		url := gamificationServiceURL + strings.TrimPrefix(c.OriginalURL(), "/api/gamification")
+		if err := proxy.Do(c, url); err != nil {
+			log.Printf("❌ Gateway Proxy Error (Gamification): %v | URL: %s", err, url)
+			return err
+		}
+		return nil
 	})
 
 	// Progress tracking -> Gamification Service (Protected)
