@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { gamificationService, GamificationStats, Achievement } from '../api/gamification';
+import { GamificationStats, Achievement } from '../api/gamification';
 import { useAuth } from './AuthContext';
+import { useApiClient } from '../api/client';
 
 
 
@@ -38,6 +39,8 @@ interface GamificationProviderProps {
 
 export const GamificationProvider: React.FC<GamificationProviderProps> = ({ children }) => {
   const { isAuthenticated } = useAuth();
+  const apiClient = useApiClient(); // Use authenticated API client with Clerk tokens
+  
   const [stats, setStats] = useState<UserStats>({
     streak: 0,
     totalTopicsCompleted: 0,
@@ -54,7 +57,8 @@ export const GamificationProvider: React.FC<GamificationProviderProps> = ({ chil
   const fetchStats = async () => {
     if (!isAuthenticated) return;
     try {
-      const data = await gamificationService.getStats();
+      const response = await apiClient.get<{ data: GamificationStats }>('/gamification/stats');
+      const data = response.data.data;
       setStats({
         ...data,
         totalTopicsCompleted: 0, // Not supported by backend yet
@@ -73,7 +77,8 @@ export const GamificationProvider: React.FC<GamificationProviderProps> = ({ chil
   const updateStreak = async () => {
     if (!isAuthenticated) return;
     try {
-      const data = await gamificationService.updateStreak();
+      const response = await apiClient.post<{ data: GamificationStats }>('/gamification/streak', {});
+      const data = response.data.data;
       setStats(prev => ({ ...prev, ...data, lastStudyDate: data.lastActivityDate || null }));
     } catch (error) {
       console.error('Failed to update streak:', error);
@@ -84,14 +89,15 @@ export const GamificationProvider: React.FC<GamificationProviderProps> = ({ chil
     if (!isAuthenticated) return;
     try {
       // 1. Update progress
-      await gamificationService.updateProgress({
+      await apiClient.post('/progress', {
         topicId,
         topicType: 'dsa', // Defaulting to dsa for now, simpler
         progress: 100
       });
       
       // 2. Add XP for completion
-      const data = await gamificationService.addXP(50);
+      const response = await apiClient.post<{ data: GamificationStats }>('/gamification/xp', { amount: 50 });
+      const data = response.data.data;
       setStats(prev => ({ 
         ...prev, 
         ...data,
@@ -106,7 +112,8 @@ export const GamificationProvider: React.FC<GamificationProviderProps> = ({ chil
   const addStudyTime = async (minutes: number) => {
     if (!isAuthenticated) return;
     try {
-      const data = await gamificationService.addXP(minutes); // 1 XP per minute
+      const response = await apiClient.post<{ data: GamificationStats }>('/gamification/xp', { amount: minutes });
+      const data = response.data.data;
       setStats(prev => ({ 
         ...prev, 
         ...data,
