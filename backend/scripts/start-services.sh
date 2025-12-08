@@ -74,6 +74,14 @@ go run main.go > ../../logs/gamification.log 2>&1 &
 echo "✅ Gamification Service started (PID: $!)"
 cd ../..
 
+# Start Webhooks Service (8087)
+echo "Starting Webhooks Service on port 8087..."
+cd services/webhooks
+export PORT=8087
+go run main.go > ../../logs/webhooks.log 2>&1 &
+echo "✅ Webhooks Service started (PID: $!)"
+cd ../..
+
 echo ""
 echo "✅ All microservices started!"
 echo ""
@@ -84,6 +92,7 @@ echo "  - System Design:      http://localhost:8083"
 echo "  - AI System Design:   http://localhost:8084"
 echo "  - Certifications:     http://localhost:8085"
 echo "  - Gamification:       http://localhost:8086 (Protected)"
+echo "  - Webhooks:           http://localhost:8087"
 echo ""
 echo "📝 Logs are in the logs/ directory"
 echo ""
