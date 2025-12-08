@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { ProgressRing } from '@/components/ui/ProgressRing';
-import { certifications } from '@/data/certificationsData';
+import { Certification } from '@/data/certificationsData';
+import { certificationService } from '@/api/certifications';
 import { ConfettiTrigger } from '@/components/shared/ConfettiTrigger';
 import {
-  Filter,
   Search,
   Award,
   Clock,
@@ -25,7 +25,7 @@ import { cn } from '@/lib/utils';
 
 // Certification Card Component
 const CertificationCard: React.FC<{
-  certification: typeof certifications[0];
+  certification: Certification;
   onClick: () => void;
 }> = ({ certification, onClick }) => {
   const getProviderColor = (provider: string) => {
@@ -134,7 +134,7 @@ const CertificationCard: React.FC<{
 
 // Roadmap View Component
 const RoadmapView: React.FC<{
-  certification: typeof certifications[0];
+  certification: Certification;
   onBack: () => void;
 }> = ({ certification, onBack }) => {
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(
@@ -323,9 +323,37 @@ const Certifications: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProvider, setSelectedProvider] = useState<string>('All');
   const [selectedLevel, setSelectedLevel] = useState<string>('All');
+  const [certifications, setCertifications] = useState<Certification[]>([]);
+  const [providers, setProviders] = useState<string[]>(['All']);
+  const [loading, setLoading] = useState(true);
 
-  const providers = ['All', ...Array.from(new Set(certifications.map(c => c.provider)))];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [certsData, providersData] = await Promise.all([
+          certificationService.getAll(),
+          certificationService.getProviders()
+        ]);
+        setCertifications(certsData);
+        setProviders(['All', ...providersData]);
+      } catch (error) {
+        console.error('Failed to fetch certifications:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   const levels = ['All', 'Foundational', 'Associate', 'Professional', 'Expert'];
+
+  if (loading) {
+    return (
+       <div className="flex items-center justify-center min-h-[400px]">
+         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+       </div>
+    );
+  }
 
   const filteredCertifications = certifications.filter(cert => {
     const matchesSearch = cert.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -457,7 +485,31 @@ const Certifications: React.FC = () => {
 const CertificationDetail: React.FC = () => {
   const { certId } = useParams();
   const navigate = useNavigate();
-  const certification = certifications.find(c => c.id === certId);
+  const [certification, setCertification] = useState<Certification | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCert = async () => {
+      if (!certId) return;
+      try {
+        const data = await certificationService.getById(certId);
+        setCertification(data);
+      } catch (error) {
+        console.error('Failed to fetch certification:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCert();
+  }, [certId]);
+
+  if (loading) {
+     return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+        </div>
+     );
+  }
 
   if (!certification) {
     return (

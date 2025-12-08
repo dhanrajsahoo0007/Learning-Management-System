@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { CodeEditor } from '@/components/ui/CodeEditor';
-import { dsaTopics } from '@/data/dsaData';
+import { DSATopic } from '@/data/dsaData';
+import { dsaService } from '@/api/dsa';
 import { mockExecuteCode, ExecutionResult } from '@/lib/utils';
 import {
   ChevronDown,
@@ -18,60 +19,10 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Topic Category Component
-const TopicCategory: React.FC<{
-  category: string;
-  topics: typeof dsaTopics;
-  expanded: boolean;
-  onToggle: () => void;
-}> = ({ category, topics, expanded, onToggle }) => {
-  const categoryTopics = topics.filter(t => t.category === category);
 
-  return (
-    <div className="mb-4">
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-      >
-        <div className="flex items-center space-x-3">
-          <Code className="w-5 h-5 text-primary-500" />
-          <span className="font-semibold text-gray-900 dark:text-white">
-            {category}
-          </span>
-          <Badge variant="secondary" className="text-xs">
-            {categoryTopics.length}
-          </Badge>
-        </div>
-        {expanded ? (
-          <ChevronDown className="w-5 h-5 text-gray-500" />
-        ) : (
-          <ChevronRight className="w-5 h-5 text-gray-500" />
-        )}
-      </button>
-
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
-          >
-            <div className="mt-2 space-y-2 pl-4">
-              {categoryTopics.map((topic) => (
-                <TopicCard key={topic.id} topic={topic} />
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
 
 // Topic Card Component
-const TopicCard: React.FC<{ topic: typeof dsaTopics[0] }> = ({ topic }) => {
+const TopicCard: React.FC<{ topic: DSATopic }> = ({ topic }) => {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
 
@@ -94,10 +45,10 @@ const TopicCard: React.FC<{ topic: typeof dsaTopics[0] }> = ({ topic }) => {
     <motion.div
       whileHover={{ x: 4 }}
       transition={{ duration: 0.2 }}
+      onClick={handleCardClick}
     >
       <Card
         className="cursor-pointer group border-l-4 border-l-primary-500"
-        onClick={handleCardClick}
       >
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-2">
@@ -179,9 +130,15 @@ const TopicCard: React.FC<{ topic: typeof dsaTopics[0] }> = ({ topic }) => {
 };
 
 // Code Playground Component
-const CodePlayground: React.FC<{ topic: typeof dsaTopics[0] }> = ({ topic }) => {
-  const [selectedLanguage, setSelectedLanguage] = useState<keyof typeof topic.content.codeTemplates>('javascript');
-  const [code, setCode] = useState(topic.content.codeTemplates[selectedLanguage]);
+const CodePlayground: React.FC<{ topic: DSATopic }> = ({ topic }) => {
+  const templates = topic.content.codeTemplates || {
+    javascript: '// Write your code here',
+    python: '# Write your code here',
+    java: '// Write your code here',
+    cpp: '// Write your code here'
+  };
+  const [selectedLanguage, setSelectedLanguage] = useState<keyof typeof templates>('javascript');
+  const [code, setCode] = useState(templates[selectedLanguage] || '');
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [showHint, setShowHint] = useState(false);
@@ -206,8 +163,8 @@ const CodePlayground: React.FC<{ topic: typeof dsaTopics[0] }> = ({ topic }) => 
     }
   };
 
-  const handleResetCode = () => {
-    setCode(topic.content.codeTemplates[selectedLanguage]);
+    const handleResetCode = () => {
+    setCode(templates[selectedLanguage] || '');
     setOutput('');
     setExecutionResult(null);
   };
@@ -223,9 +180,9 @@ const CodePlayground: React.FC<{ topic: typeof dsaTopics[0] }> = ({ topic }) => 
           <select
             value={selectedLanguage}
             onChange={(e) => {
-              const lang = e.target.value as keyof typeof topic.content.codeTemplates;
+              const lang = e.target.value as keyof typeof templates;
               setSelectedLanguage(lang);
-              setCode(topic.content.codeTemplates[lang]);
+              setCode(templates[lang] || '');
               setOutput('');
               setExecutionResult(null);
             }}
@@ -274,9 +231,9 @@ const CodePlayground: React.FC<{ topic: typeof dsaTopics[0] }> = ({ topic }) => 
               💡 Hint
             </h4>
             <ul className="space-y-1 text-sm text-yellow-700 dark:text-yellow-300">
-              {topic.content.hints.map((hint, index) => (
+              {topic.content.hints?.map((hint, index) => (
                 <li key={index}>• {hint}</li>
-              ))}
+              )) || <li>No hints available for this problem.</li>}
             </ul>
           </motion.div>
         )}
@@ -335,7 +292,7 @@ const CodePlayground: React.FC<{ topic: typeof dsaTopics[0] }> = ({ topic }) => 
 
           <CodeEditor
             value={code}
-            onChange={setCode}
+            onChange={(val) => setCode(val || '')}
             language={selectedLanguage}
             height="400px"
           />
@@ -370,7 +327,7 @@ const CodePlayground: React.FC<{ topic: typeof dsaTopics[0] }> = ({ topic }) => 
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {topic.content.testCases.map((testCase, index) => (
+                {topic.content.testCases?.map((testCase, index) => (
                   <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
                     <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                       Input: {testCase.input}
@@ -393,7 +350,31 @@ const CodePlayground: React.FC<{ topic: typeof dsaTopics[0] }> = ({ topic }) => 
 const TopicDetail: React.FC = () => {
   const { topicId } = useParams();
   const navigate = useNavigate();
-  const topic = dsaTopics.find(t => t.id === topicId);
+  const [topic, setTopic] = useState<DSATopic | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    const fetchTopic = async () => {
+      if (!topicId) return;
+      try {
+        const data = await dsaService.getById(topicId);
+        setTopic(data);
+      } catch (error) {
+        console.error('Failed to fetch topic:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTopic();
+  }, [topicId]);
+
+  if (loading) {
+     return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+        </div>
+     );
+  }
 
   if (!topic) {
     return (
@@ -470,7 +451,7 @@ const TopicDetail: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {topic.content.examples.map((example, index) => (
+                {topic.content.examples?.map((example, index) => (
                   <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                     <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
                       Example {index + 1}
@@ -566,6 +547,31 @@ const TopicDetail: React.FC = () => {
 
 // Main DSA Page Component
 const DSA: React.FC = () => {
+  const [topics, setTopics] = useState<DSATopic[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        const data = await dsaService.getAll();
+        setTopics(data);
+      } catch (error) {
+        console.error('Failed to fetch topics:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTopics();
+  }, []);
+
+  if (loading) {
+    return (
+       <div className="flex items-center justify-center min-h-[400px]">
+         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+       </div>
+    );
+  }
+
   return (
     <Routes>
       <Route
@@ -588,10 +594,10 @@ const DSA: React.FC = () => {
               <div className="flex items-center justify-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                 <span className="flex items-center space-x-1">
                   <Code className="w-4 h-4" />
-                  <span>{dsaTopics.length} Topics</span>
+                  <span>{topics.length} Topics</span>
                 </span>
                 <span>•</span>
-                <span>230+ Problems</span>
+                <span>{topics.reduce((acc, t) => acc + (t.problemCount || 0), 0)}+ Problems</span>
                 <span>•</span>
                 <span>4 Languages</span>
               </div>
@@ -604,7 +610,7 @@ const DSA: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="space-y-3"
             >
-              {dsaTopics.map((topic, index) => (
+              {topics.map((topic, index) => (
                 <motion.div
                   key={topic.id}
                   initial={{ opacity: 0, x: -20 }}

@@ -4,8 +4,8 @@ import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { ProgressRing } from '@/components/ui/ProgressRing';
-import { architectureTopics } from '@/data/systemDesignData';
-import { aiSystemDesignTopics } from '@/data/aiSystemDesignData';
+import { ArchitectureTopic } from '@/data/systemDesignData';
+import { systemDesignService } from '@/api/systemDesign';
 import { Scale, Grid3X3, Database, Router, MessageSquare, Split, Zap, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -22,7 +22,7 @@ const iconMap = {
 
 
 // System Design Topic Card Component
-const TopicCard: React.FC<{ topic: typeof architectureTopics[0] }> = ({ topic }) => {
+const TopicCard: React.FC<{ topic: ArchitectureTopic }> = ({ topic }) => {
   const navigate = useNavigate();
   const IconComponent = iconMap[topic.icon as keyof typeof iconMap];
 
@@ -78,9 +78,33 @@ const TopicCard: React.FC<{ topic: typeof architectureTopics[0] }> = ({ topic })
 const TopicDetail: React.FC = () => {
   const { topicId } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-const isAI = location.pathname.includes('/ai');
-const topic = (isAI ? aiSystemDesignTopics : architectureTopics).find(t => t.id === topicId);
+
+
+  const [topic, setTopic] = React.useState<ArchitectureTopic | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchTopic = async () => {
+      if (!topicId) return;
+      try {
+        const data = await systemDesignService.getTopicById(topicId);
+        setTopic(data);
+      } catch (error) {
+        console.error('Failed to fetch topic:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTopic();
+  }, [topicId]);
+
+  if (loading) {
+     return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+        </div>
+     );
+  }
 
   if (!topic) {
     return (
@@ -174,7 +198,7 @@ const topic = (isAI ? aiSystemDesignTopics : architectureTopics).find(t => t.id 
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {topic.content.steps.map((step, index) => (
+                {topic.content.steps?.map((step, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, y: 20 }}
@@ -206,7 +230,7 @@ const topic = (isAI ? aiSystemDesignTopics : architectureTopics).find(t => t.id 
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
-                {topic.content.examples.map((example, index) => (
+                {topic.content.examples?.map((example, index) => (
                   <motion.li
                     key={index}
                     initial={{ opacity: 0, x: -20 }}
@@ -286,7 +310,38 @@ const SystemDesign: React.FC = () => {
   
   // Detect if we're on the AI system design path
   const isAIPath = location.pathname.startsWith('/system-design/ai');
-  const topics = isAIPath ? aiSystemDesignTopics : architectureTopics;
+  
+  const [topics, setTopics] = React.useState<ArchitectureTopic[]>([]);
+  const [aiTopics, setAiTopics] = React.useState<ArchitectureTopic[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        const [regularData, aiData] = await Promise.all([
+          systemDesignService.getTopics(),
+          systemDesignService.getAITopics()
+        ]);
+        setTopics(regularData);
+        setAiTopics(aiData);
+      } catch (error) {
+        console.error('Failed to fetch topics:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTopics();
+  }, []);
+
+  if (loading) {
+    return (
+       <div className="flex items-center justify-center min-h-[400px]">
+         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+       </div>
+    );
+  }
+
+  const currentTopics = isAIPath ? aiTopics : topics;
   
   return (
     <Routes>
@@ -333,14 +388,14 @@ const SystemDesign: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
-              {topics.map((topic, index) => (
+              {currentTopics.map((topic, index) => (
                 <motion.div
                   key={topic.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
                 >
-                  <TopicCard topic={topic as any} />
+                  <TopicCard topic={topic} />
                 </motion.div>
               ))}
             </motion.div>
@@ -387,14 +442,14 @@ const SystemDesign: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {aiSystemDesignTopics.map((topic, index) => (
+            {aiTopics.map((topic, index) => (
               <motion.div
                 key={topic.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
               >
-                <TopicCard topic={topic as any} />
+                <TopicCard topic={topic} />
               </motion.div>
             ))}
           </motion.div>
