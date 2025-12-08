@@ -1,0 +1,18 @@
+Min heap construction 
+- Build Heap- Looks like NLogN but N
+   - when we use sift down, by taylor series and converges to N,
+    - if using sift up, then its n log n
+- Sift Down - log N
+- Sift Up - log N
+- Insert - log N
+- Delete - log N
+
+Indexes of 
+ 1. parent = floor(child_index -1 // 2)
+ 2.  left child = 2*parent_index + 1
+ 3.  right child = 2*parent_index + 2
+
+
+Property
+the root is smaller than all of its children
+O(log N) - insert / delete 

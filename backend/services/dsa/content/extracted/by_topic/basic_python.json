@@ -1,0 +1,81 @@
+{
+  "problems": [
+    {
+      "id": "nonlocal-in-python",
+      "title": "Nonlocal In Python",
+      "statement": "",
+      "examples": [],
+      "test_cases": [],
+      "constraints": null,
+      "solutions": [
+        {
+          "language": "python",
+          "code": "def outer():\n    count = 0\n    def inner():\n        count += 1  # This would raise an UnboundLocalError without nonlocal\n    inner()\n    return count",
+          "name": "outer",
+          "complexity": null
+        },
+        {
+          "language": "python",
+          "code": "def outer():\n    count = 0\n    def inner():\n        nonlocal count\n        count += 1  # Now this modifies the outer count\n    inner()\n    return count",
+          "name": "outer",
+          "complexity": null
+        }
+      ],
+      "difficulty": null,
+      "topics": [
+        "Basic Python"
+      ],
+      "source_file": "00. Basic Python /02. nonlocal in python.py"
+    },
+    {
+      "id": "frequency-sort-of-array",
+      "title": "Sort Array by Decreasing Frequency",
+      "statement": "Sort Array by Decreasing Frequency\n    Given an array of integers, sort the array according to frequency of elements. \n    That is, elements that have higher frequency come first. If frequencies of two elements are same, then smaller number comes first.",
+      "examples": [
+        {
+          "input": "arr = [2, 5, 2, 8, 5, 6, 8, 8]",
+          "output": "[8, 8, 8, 2, 2, 5, 5, 6]",
+          "explanation": null
+        },
+        {
+          "input": "arr = [2, 5, 2, 6, -1, 9999999, 5, 8, 8, 8]",
+          "output": "[8, 8, 8, 2, 2, 5, 5, 6, -1, 9999999]",
+          "explanation": null
+        }
+      ],
+      "test_cases": [],
+      "constraints": "1 <= arr.length <= 10^5\n-10^9 <= arr[i] <= 10^9",
+      "solutions": [
+        {
+          "language": "python",
+          "code": "def frequency_sort_using_map(arr: List[int]) -> List[int]:\n    # Count the frequency of each number\n    freq_count = Counter(arr)\n    \n    # Sort the unique elements based on their frequency and value\n    sorted_elements = sorted(freq_count.keys(), key=lambda x: (-freq_count[x], x))\n    \n    # Construct the result array\n    result = []\n    for num in sorted_elements:\n        result.extend([num] * freq_count[num])\n    \n    return result",
+          "name": "frequency_sort_using_map",
+          "complexity": {
+            "time": null,
+            "space": "O(n)",
+            "explanation": "Time Complexity for frequency_sort_using_map:\nSpace Complexity for frequency_sort_using_map:O(n)"
+          }
+        },
+        {
+          "language": "python",
+          "code": "def frequency_sort(arr: List[int]) -> List[int]:\n    # Count the frequency of each number\n    freq_count = Counter(arr)\n    \n    # Define a key function for sorting\n    def sort_key(x):\n        return (-freq_count[x], x)\n    \n    # Sort the array using the key function\n    return sorted(arr, key=sort_key)",
+          "name": "frequency_sort",
+          "complexity": {
+            "time": "O(n log n)",
+            "space": "O(n)",
+            "explanation": "Time Complexity for frequency_sort: O(n log n), where n is the number of elements in the input array.\nSpace Complexity for frequency_sort: O(n)"
+          }
+        }
+      ],
+      "difficulty": null,
+      "topics": [
+        "Array",
+        "Sorting",
+        "HashMap",
+        "Basic Python"
+      ],
+      "source_file": "00. Basic Python /01. Frequency sort of array.py"
+    }
+  ],
+  "metadata": {}
+}

@@ -398,6 +398,8 @@ const Certifications: React.FC = () => {
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
+                      id="cert-search"
+                      name="search"
                       type="text"
                       placeholder="Search certifications..."
                       value={searchQuery}
@@ -410,6 +412,8 @@ const Certifications: React.FC = () => {
                 {/* Provider Filter */}
                 <div className="md:w-48">
                   <select
+                    id="provider-filter"
+                    name="provider"
                     value={selectedProvider}
                     onChange={(e) => setSelectedProvider(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus-ring"
@@ -423,6 +427,8 @@ const Certifications: React.FC = () => {
                 {/* Level Filter */}
                 <div className="md:w-48">
                   <select
+                    id="level-filter"
+                    name="level"
                     value={selectedLevel}
                     onChange={(e) => setSelectedLevel(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus-ring"

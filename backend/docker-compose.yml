@@ -1,0 +1,148 @@
+version: "3.8"
+
+services:
+  # API Gateway - Entry point for all requests
+  gateway:
+    build:
+      context: .
+      dockerfile: services/gateway/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - ENVIRONMENT=development
+      - AUTH_SERVICE_URL=http://auth:8081
+      - DSA_SERVICE_URL=http://dsa:8082
+      - SYSTEM_DESIGN_SERVICE_URL=http://system-design:8083
+      - AI_SYSTEM_DESIGN_SERVICE_URL=http://ai-system-design:8084
+      - CERTIFICATIONS_SERVICE_URL=http://certifications:8085
+      - GAMIFICATION_SERVICE_URL=http://gamification:8086
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+    depends_on:
+      - auth
+      - dsa
+      - system-design
+      - ai-system-design
+      - certifications
+      - gamification
+    networks:
+      - lms-network
+
+  # Auth Service - User authentication
+  auth:
+    build:
+      context: .
+      dockerfile: services/auth/Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - ENVIRONMENT=development
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_AUTH_TOKEN=${DATABASE_AUTH_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRY=24h
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+    networks:
+      - lms-network
+
+  # DSA Service - Data Structures & Algorithms
+  dsa:
+    build:
+      context: .
+      dockerfile: services/dsa/Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=8082
+      - ENVIRONMENT=development
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_AUTH_TOKEN=${DATABASE_AUTH_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+      - GAMIFICATION_SERVICE_URL=http://gamification:8086
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+    depends_on:
+      - gamification
+    networks:
+      - lms-network
+
+  # System Design Service - Traditional system design topics
+  system-design:
+    build:
+      context: .
+      dockerfile: services/system-design/Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      - PORT=8083
+      - ENVIRONMENT=development
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_AUTH_TOKEN=${DATABASE_AUTH_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+      - GAMIFICATION_SERVICE_URL=http://gamification:8086
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+    depends_on:
+      - gamification
+    networks:
+      - lms-network
+
+  # AI System Design Service - AI-specific system design
+  ai-system-design:
+    build:
+      context: .
+      dockerfile: services/ai-system-design/Dockerfile
+    ports:
+      - "8084:8084"
+    environment:
+      - PORT=8084
+      - ENVIRONMENT=development
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_AUTH_TOKEN=${DATABASE_AUTH_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+      - GAMIFICATION_SERVICE_URL=http://gamification:8086
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+    depends_on:
+      - gamification
+    networks:
+      - lms-network
+
+  # Certifications Service - Certification tracking
+  certifications:
+    build:
+      context: .
+      dockerfile: services/certifications/Dockerfile
+    ports:
+      - "8085:8085"
+    environment:
+      - PORT=8085
+      - ENVIRONMENT=development
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_AUTH_TOKEN=${DATABASE_AUTH_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+      - GAMIFICATION_SERVICE_URL=http://gamification:8086
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+    depends_on:
+      - gamification
+    networks:
+      - lms-network
+
+  # Gamification Service - XP, achievements, streaks
+  gamification:
+    build:
+      context: .
+      dockerfile: services/gamification/Dockerfile
+    ports:
+      - "8086:8086"
+    environment:
+      - PORT=8086
+      - ENVIRONMENT=development
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_AUTH_TOKEN=${DATABASE_AUTH_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+    networks:
+      - lms-network
+
+networks:
+  lms-network:
+    driver: bridge

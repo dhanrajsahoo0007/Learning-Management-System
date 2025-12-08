@@ -1,345 +1,253 @@
-# Learning Management System - Backend API
+# Learning Management System - Backend (Microservices)
 
-> High-performance Go backend built with Fiber v2.52+ and Turso (libSQL) database
+A scalable microservices architecture for a comprehensive Learning Management System built with Go, Fiber, and Turso.
 
-[![Go](https://img.shields.io/badge/Go-1.25+-00ADD8?style=flat-square&logo=go)](https://golang.org/)
-[![Fiber](https://img.shields.io/badge/Fiber-v2.52-00ACD7?style=flat-square)](https://gofiber.io/)
-[![Turso](https://img.shields.io/badge/Turso-libSQL-4FF8D2?style=flat-square)](https://turso.tech/)
+## 🏗️ Architecture
 
-RESTful API backend for the Learning Management System providing endpoints for DSA topics, System Design, Certifications, User Authentication, and Gamification features.
+This backend consists of **7 independent microservices**:
+
+| Service              | Port | Description                                 |
+| -------------------- | ---- | ------------------------------------------- |
+| **API Gateway**      | 8080 | Entry point, routes to all services         |
+| **Auth Service**     | 8081 | User authentication & JWT tokens            |
+| **DSA Service**      | 8082 | Data Structures & Algorithms (895 problems) |
+| **System Design**    | 8083 | Traditional system design topics            |
+| **AI System Design** | 8084 | AI-specific system design topics            |
+| **Certifications**   | 8085 | Certification tracking & roadmaps           |
+| **Gamification**     | 8086 | XP, levels, achievements, streaks           |
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- **Go 1.25+** installed
-- **Turso account** and database ([Get started](https://turso.tech/))
-- **Git** for version control
+- Docker & Docker Compose
+- Turso database account ([setup guide](./docs/TURSO_SETUP.md))
 
-### 1. Setup Turso Database
-
-```bash
-# Install Turso CLI
-curl -sSfL https://get.tur.so/install.sh | bash
-
-# Login to Turso
-turso auth login
-
-# Create a new database
-turso db create learning-management
-
-# Get database URL
-turso db show learning-management --url
-
-# Get auth token
-turso db tokens create learning-management
-```
-
-### 2. Configure Environment
+### 1. Environment Setup
 
 ```bash
 # Copy environment template
-cp .env.example .env
+cp .env.services .env
 
-# Edit .env with your Turso credentials
-# TURSO_DATABASE_URL=libsql://your-database.turso.io
-# TURSO_AUTH_TOKEN=your-auth-token
-# JWT_SECRET=your-secret-key
+# Edit with your credentials
+nano .env
 ```
 
-### 3. Install Dependencies
+Required variables:
+
+```env
+DATABASE_URL=libsql://your-database.turso.io
+DATABASE_AUTH_TOKEN=your-turso-auth-token
+JWT_SECRET=your-super-secret-jwt-key
+```
+
+### 2. Start All Services
 
 ```bash
-go mod download
+# Build and start all 7 services
+docker-compose up --build
+
+# Or run in background
+docker-compose up --build -d
 ```
 
-### 4. Run the Server
+### 3. Verify Services
 
 ```bash
-# Development mode
-go run cmd/server/main.go
-
-# Or build and run
-go build -o bin/server cmd/server/main.go
-./bin/server
+# Check all services are healthy
+curl http://localhost:8080/api/health  # Gateway
+curl http://localhost:8081/health      # Auth
+curl http://localhost:8082/health      # DSA
+curl http://localhost:8083/health      # System Design
+curl http://localhost:8084/health      # AI System Design
+curl http://localhost:8085/health      # Certifications
+curl http://localhost:8086/health      # Gamification
 ```
 
-The server will start on `http://localhost:8080`
-
-## 📚 API Documentation
-
-### Health Check
-
-```bash
-GET /api/health
-```
-
-### Authentication
-
-```bash
-# Register
-POST /api/auth/register
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "SecurePass123",
-  "name": "John Doe"
-}
-
-# Login
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "SecurePass123"
-}
-
-# Get current user (protected)
-GET /api/auth/me
-Authorization: Bearer <jwt-token>
-```
-
-### DSA Topics
-
-```bash
-# Get all DSA topics
-GET /api/dsa/topics
-
-# Get specific topic
-GET /api/dsa/topics/:id
-
-# Get categories
-GET /api/dsa/categories
-```
-
-### System Design
-
-```bash
-# Get all system design topics
-GET /api/system-design/topics
-
-# Get specific topic
-GET /api/system-design/topics/:id
-
-# Get AI system design topics
-GET /api/ai-system-design/topics
-```
-
-### Certifications
-
-```bash
-# Get all certifications
-GET /api/certifications
-
-# Get specific certification
-GET /api/certifications/:id
-
-# Get providers
-GET /api/certifications/providers
-```
-
-### Gamification (Protected)
-
-```bash
-# Get user stats
-GET /api/gamification/stats
-Authorization: Bearer <jwt-token>
-
-# Add XP
-POST /api/gamification/xp
-Authorization: Bearer <jwt-token>
-Content-Type: application/json
-
-{
-  "amount": 50
-}
-
-# Unlock achievement
-POST /api/gamification/achievements
-Authorization: Bearer <jwt-token>
-Content-Type: application/json
-
-{
-  "achievementId": "first-topic",
-  "title": "First Steps",
-  "description": "Completed your first topic",
-  "icon": "trophy",
-  "rarity": "common"
-}
-
-# Update streak
-POST /api/gamification/streak
-Authorization: Bearer <jwt-token>
-
-# Update progress
-POST /api/progress
-Authorization: Bearer <jwt-token>
-Content-Type: application/json
-
-{
-  "topicId": "array",
-  "topicType": "dsa",
-  "progress": 75
-}
-```
-
-## 🏗️ Project Structure
+## 📁 Project Structure
 
 ```
 backend/
-├── cmd/
-│   └── server/
-│       └── main.go              # Application entry point
-├── internal/
-│   ├── config/
-│   │   └── config.go            # Configuration management
-│   ├── database/
-│   │   ├── turso.go             # Turso database connection
-│   │   └── migrations.go        # Database schema migrations
-│   ├── models/
-│   │   ├── user.go              # User model
-│   │   ├── dsa.go               # DSA topic model
-│   │   ├── system_design.go     # System Design model
-│   │   ├── certification.go     # Certification model
-│   │   └── gamification.go      # Gamification models
-│   ├── repository/
-│   │   ├── user_repository.go
-│   │   ├── dsa_repository.go
-│   │   ├── system_design_repository.go
-│   │   ├── certification_repository.go
-│   │   └── gamification_repository.go
-│   ├── handlers/
-│   │   ├── health_handler.go
-│   │   ├── auth_handler.go
-│   │   ├── dsa_handler.go
-│   │   ├── system_design_handler.go
-│   │   ├── certification_handler.go
-│   │   └── gamification_handler.go
-│   ├── middleware/
-│   │   ├── auth.go              # JWT authentication
-│   │   ├── cors.go              # CORS configuration
-│   │   ├── logger.go            # Request logging
-│   │   ├── rate_limiter.go      # Rate limiting
-│   │   └── error_handler.go     # Error handling
-│   ├── routes/
-│   │   └── routes.go            # Route registration
-│   └── utils/
-│       ├── response.go          # API response helpers
-│       └── validator.go         # Input validation
-├── scripts/
-│   └── seed.go                  # Database seeding (TODO)
-├── .env.example                 # Environment template
-├── .gitignore
-├── go.mod
-├── go.sum
-├── Dockerfile
-└── README.md
+├── services/                    # All microservices
+│   ├── shared/                 # Shared libraries (config, database, middleware)
+│   ├── gateway/                # API Gateway (reverse proxy)
+│   ├── auth/                   # Authentication service
+│   ├── dsa/                    # DSA service + 895 problem files
+│   ├── system-design/          # System Design service
+│   ├── ai-system-design/       # AI System Design service
+│   ├── certifications/         # Certifications service
+│   └── gamification/           # Gamification service
+├── docker-compose.yml          # Orchestration config
+├── .env.services              # Environment template
+├── scripts/                   # Utility scripts
+└── docs/                      # Documentation
+    ├── MICROSERVICES.md       # Architecture details
+    ├── TESTING_GUIDE.md       # Testing procedures
+    └── TURSO_SETUP.md         # Database setup
 ```
 
-## 🔧 Technology Stack
+## 🔧 Development
 
-- **[Go 1.25+](https://golang.org/)** - Programming language
-- **[Fiber v2.52+](https://gofiber.io/)** - Web framework
-- **[Turso (libSQL)](https://turso.tech/)** - Edge database
-- **[JWT](https://github.com/golang-jwt/jwt)** - Authentication
-- **[bcrypt](https://pkg.go.dev/golang.org/x/crypto/bcrypt)** - Password hashing
-
-## 🔒 Security Features
-
-- **JWT Authentication** - Secure token-based auth
-- **Password Hashing** - bcrypt with salt
-- **Rate Limiting** - 100 requests/minute per IP
-- **CORS Protection** - Configured origins
-- **Input Validation** - Email, password strength
-- **SQL Injection Prevention** - Parameterized queries
-
-## 🚢 Deployment
-
-### Docker
+### Run Individual Service
 
 ```bash
-# Build image
-docker build -t learning-management-backend .
-
-# Run container
-docker run -p 8080:8080 \
-  -e TURSO_DATABASE_URL=your-url \
-  -e TURSO_AUTH_TOKEN=your-token \
-  -e JWT_SECRET=your-secret \
-  learning-management-backend
+cd services/auth
+export PORT=8081
+export DATABASE_URL="your-url"
+export DATABASE_AUTH_TOKEN="your-token"
+export JWT_SECRET="your-secret"
+go run main.go
 ```
 
-### Production Build
+### View Logs
 
 ```bash
-# Build optimized binary
-CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o bin/server cmd/server/main.go
+# All services
+docker-compose logs -f
 
-# Run
-./bin/server
+# Specific service
+docker-compose logs -f auth
 ```
 
-## 📝 Environment Variables
+### Restart Service
 
-| Variable             | Description                          | Required | Default                 |
-| -------------------- | ------------------------------------ | -------- | ----------------------- |
-| `PORT`               | Server port                          | No       | `8080`                  |
-| `ENV`                | Environment (development/production) | No       | `development`           |
-| `TURSO_DATABASE_URL` | Turso database URL                   | Yes      | -                       |
-| `TURSO_AUTH_TOKEN`   | Turso auth token                     | Yes      | -                       |
-| `JWT_SECRET`         | JWT signing secret                   | Yes      | -                       |
-| `JWT_EXPIRY`         | JWT expiration duration              | No       | `24h`                   |
-| `FRONTEND_URL`       | Frontend origin for CORS             | No       | `http://localhost:5173` |
-| `RATE_LIMIT_MAX`     | Max requests per window              | No       | `100`                   |
-| `RATE_LIMIT_WINDOW`  | Rate limit time window               | No       | `1m`                    |
+```bash
+docker-compose restart dsa
+```
+
+### Stop All Services
+
+```bash
+docker-compose down
+```
 
 ## 🧪 Testing
 
+See [TESTING_GUIDE.md](./docs/TESTING_GUIDE.md) for comprehensive testing procedures.
+
+**Quick Test:**
+
 ```bash
-# Run all tests
-go test ./...
+# Register user
+curl -X POST http://localhost:8080/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@test.com","password":"pass123","name":"Test User"}'
 
-# Run with coverage
-go test -cover ./...
+# Get DSA topics
+curl http://localhost:8080/api/dsa/topics
 
-# Run specific package tests
-go test ./internal/handlers -v
+# Get certifications
+curl http://localhost:8080/api/certifications
 ```
 
-## 📊 Database Schema
+## 📚 API Documentation
 
-The backend uses Turso (libSQL) with the following tables:
+### Auth Service
 
-- `users` - User accounts
-- `dsa_topics` - DSA learning content
-- `system_design_topics` - System design content
-- `certifications` - Certification paths
-- `user_progress` - Learning progress tracking
-- `gamification_stats` - XP, levels, streaks
-- `achievements` - Unlocked achievements
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login user
+- `GET /api/auth/me` - Get current user (protected)
 
-Migrations run automatically on server start.
+### DSA Service
+
+- `GET /api/dsa/topics` - List all DSA topics
+- `GET /api/dsa/topics/:id` - Get specific topic
+- `GET /api/dsa/categories` - Get all categories
+
+### System Design Service
+
+- `GET /api/system-design/topics` - List topics
+- `GET /api/system-design/topics/:id` - Get specific topic
+
+### AI System Design Service
+
+- `GET /api/ai-system-design/topics` - List AI topics
+- `GET /api/ai-system-design/topics/:id` - Get specific topic
+
+### Certifications Service
+
+- `GET /api/certifications` - List all certifications
+- `GET /api/certifications/:id` - Get specific certification
+- `GET /api/certifications/providers` - Get providers
+
+### Gamification Service (Protected)
+
+- `GET /api/gamification/stats` - Get user stats
+- `POST /api/gamification/xp` - Add XP
+- `POST /api/gamification/achievements` - Unlock achievement
+- `POST /api/gamification/streak` - Update streak
+
+## 🗄️ Database
+
+Using **Turso** (LibSQL) - serverless SQLite database.
+
+**Setup:** See [docs/TURSO_SETUP.md](./docs/TURSO_SETUP.md)
+
+**Shared Database Strategy:** All services connect to the same Turso database for simplified initial deployment. Can be split into separate databases per service later if needed.
+
+## 🔐 Security
+
+- JWT-based authentication
+- CORS protection
+- Rate limiting on API Gateway
+- Environment-based secrets
+- Protected endpoints require Bearer token
+
+## 📊 Monitoring
+
+Each service exposes a `/health` endpoint:
+
+```json
+{
+  "service": "service-name",
+  "status": "healthy",
+  "database": "connected",
+  "version": "1.0.0"
+}
+```
+
+## 🚢 Deployment
+
+### Docker Compose (Recommended for Development)
+
+```bash
+docker-compose up --build
+```
+
+### Individual Services (Production)
+
+Each service can be deployed independently:
+
+1. Build Docker image for each service
+2. Deploy to your platform (Vercel, DigitalOcean, AWS, etc.)
+3. Configure environment variables
+4. Set up service discovery/load balancing
+
+## 🛠️ Tech Stack
+
+- **Language:** Go 1.23
+- **Framework:** Fiber v2
+- **Database:** Turso (LibSQL/SQLite)
+- **Containerization:** Docker
+- **Orchestration:** Docker Compose
+
+## 📖 Documentation
+
+- **[MICROSERVICES.md](./docs/MICROSERVICES.md)** - Detailed architecture guide
+- **[TESTING_GUIDE.md](./docs/TESTING_GUIDE.md)** - Complete testing procedures
+- **[TURSO_SETUP.md](./docs/TURSO_SETUP.md)** - Database setup instructions
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests and linting
-5. Submit a pull request
+1. Create feature branch from `main`
+2. Make changes in appropriate service
+3. Test locally with Docker Compose
+4. Submit pull request
 
-## 📄 License
+## 📝 License
 
-MIT License - see LICENSE file for details
-
-## 🙏 Acknowledgments
-
-- [Fiber](https://gofiber.io/) - Fast HTTP framework
-- [Turso](https://turso.tech/) - Edge database platform
-- [Go](https://golang.org/) - Programming language
+Part of the Learning Management System project.
 
 ---
 
-**Built with ❤️ using Go, Fiber, and Turso**
+**Ready to start?** Run `docker-compose up --build` and all services will be available! 🚀

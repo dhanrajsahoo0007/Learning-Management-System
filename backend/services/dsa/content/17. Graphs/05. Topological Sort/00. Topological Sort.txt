@@ -1,0 +1,38 @@
+Topological Sorting:
+    Topological sorting is an ordering of the vertices in a directed acyclic graph (DAG) such that 
+    for every directed edge (u, v), vertex u comes before vertex v in the ordering.
+    In other words, it's a linear ordering of vertices that respects the partial order defined by the edges of the DAG.
+
+Key Properties of Topological Sorting:
+
+    1. Applicable only to DAGs:
+        Topological sorting can only be performed on directed acyclic graphs. If the graph contains a cycle, a valid topological ordering is impossible.
+    2. Not unique:
+        A DAG can have multiple valid topological orderings. The number of valid orderings depends on the graph structure.
+    3. First vertex:
+        In a topological order, the first vertex will always be a vertex with in-degree zero (no incoming edges).
+    4. Last vertex:
+        The last vertex in a topological order will always be a vertex with out-degree zero (no outgoing edges).
+    5. Edge direction:
+        For every edge (u, v) in the DAG, u comes before v in the topological ordering.
+    6. Preservation of precedence:
+        If there's a path from vertex u to vertex v in the DAG, u will appear before v in any valid topological ordering.
+    7. Algorithmic complexity:
+        Topological sorting can be performed in linear time, O(V + E), where V is the number of vertices and E is the number of edges.
+    8. Detection of cycles:
+        Attempting to perform a topological sort can be used to detect whether a directed graph contains a cycle.
+    9. Partial order:
+        Topological sorting provides a total order that is consistent with the partial order defined by the DAG.
+
+Applications:
+
+It's used in scheduling jobs or tasks with dependencies, course prerequisite planning, and in build systems to determine the order of compilation.
+
+
+Common Algorithms for Topological Sorting:
+    Kahn's algorithm: Uses a queue and in-degree information of vertices.
+    Depth-First Search (DFS) based algorithm: Uses DFS and a stack to produce the topological order.
+
+Example Use Case:
+    Consider a set of courses with prerequisites. 
+    A topological sort of these courses would give a valid order in which to take the courses, ensuring all prerequisites are met.
