@@ -1,7 +1,9 @@
 import axios from 'axios';
+import { useAuth } from '@clerk/clerk-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
+// Base API client (no auth)
 export const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
@@ -9,28 +11,45 @@ export const apiClient = axios.create({
   },
 });
 
-// Add interceptor to add token to requests
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// Hook to create authenticated API client with Clerk token
+export const useApiClient = () => {
+  const { getToken } = useAuth();
 
+  const authenticatedClient = axios.create({
+    baseURL: API_URL,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  // Add interceptor to inject Clerk token
+  authenticatedClient.interceptors.request.use(async (config) => {
+    try {
+      const token = await getToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.error('Failed to get Clerk token:', error);
+    }
+    return config;
+  });
+
+  return authenticatedClient;
+};
+
+// Legacy functions kept for backward compatibility (deprecated)
+// These are no longer used with Clerk but kept to avoid breaking existing code
 export const setAuthToken = (token: string) => {
-  if (token) {
-    localStorage.setItem('token', token);
-  } else {
-    localStorage.removeItem('token');
-  }
+  console.warn('setAuthToken is deprecated with Clerk authentication');
 };
 
 export const getAuthToken = () => {
-  return localStorage.getItem('token');
+  console.warn('getAuthToken is deprecated with Clerk authentication');
+  return null;
 };
 
 export const logout = () => {
-  setAuthToken('');
-  window.location.href = '/login';
+  console.warn('logout is deprecated - use Clerk signOut instead');
+  window.location.href = '/sign-in';
 };

@@ -36,6 +36,7 @@ Learning Management is an innovative educational platform that combines:
 - **🎨 Beautiful UI**: Inspired by Duolingo with playful, engaging interfaces
 
 ### 🎯 Target Audience
+
 - **Software Engineers** preparing for technical interviews
 - **Developers** wanting to master system design principles
 - **Students** learning data structures and algorithms
@@ -43,6 +44,7 @@ Learning Management is an innovative educational platform that combines:
 - **Teams** looking for internal training platforms
 
 ### 🎯 Learning Goals
+
 - **System Design**: Master scalable architecture patterns and distributed systems
 - **DSA Mastery**: Solve problems with multiple programming languages
 - **Cloud Expertise**: Prepare for AWS, Azure, GCP, and Kubernetes certifications
@@ -72,6 +74,7 @@ Learning Management/
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - **Node.js** (v18 or higher)
 - **npm** or **yarn**
 
@@ -80,27 +83,64 @@ Learning Management/
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd Learning Management
+cd Learning-Management
 
-# Navigate to the frontend folder (contains everything)
+# Install frontend dependencies
 cd frontend
-
-# Install all dependencies
 npm install
+
+# Install backend dependencies
+cd ../backend
+go mod download
 ```
 
-### 2. Start the Application
+### 2. Configure Authentication (Clerk)
+
+This platform uses [Clerk](https://clerk.com) for authentication. You'll need to set up a Clerk account:
 
 ```bash
-# Start the complete Learning Management application
+# 1. Create a Clerk account at https://clerk.com
+# 2. Create a new application
+# 3. Get your API keys from the Clerk dashboard
+
+# Frontend environment (.env in frontend/)
+echo "VITE_CLERK_PUBLISHABLE_KEY=pk_test_your_key_here" > frontend/.env
+echo "VITE_API_URL=http://localhost:8080/api" >> frontend/.env
+
+# Backend environment (.env in backend/)
+echo "CLERK_SECRET_KEY=sk_test_your_key_here" >> backend/.env
+echo "TURSO_DATABASE_URL=your_database_url" >> backend/.env
+echo "TURSO_AUTH_TOKEN=your_auth_token" >> backend/.env
+```
+
+> **📖 Detailed Setup Guide**: See [CLERK_SETUP.md](./CLERK_SETUP.md) for complete Clerk configuration instructions
+
+### 3. Start the Application
+
+```bash
+# Terminal 1: Start backend services
+cd backend
+bash scripts/start-services.sh
+
+# Terminal 2: Start frontend
+cd frontend
 npm run dev
 ```
 
-The application will start on `http://localhost:5173` (or next available port)
+The application will start on:
 
-### 3. Access the Application
+- **Frontend**: `http://localhost:5173`
+- **API Gateway**: `http://localhost:8080`
 
-Open your browser and navigate to the displayed URL (usually `http://localhost:5173`)
+### 4. Access the Application
+
+Open your browser and navigate to `http://localhost:5173`
+
+**First Time Setup**:
+
+1. Click "Sign Up" to create your account
+2. Complete the Clerk authentication flow
+3. Start learning!
 
 ### 4. Demo Features
 
@@ -116,6 +156,7 @@ Open your browser and navigate to the displayed URL (usually `http://localhost:5
 ## ✨ Key Features
 
 ### 🎨 **User Experience**
+
 - **🌙 Dark/Light Mode**: Automatic theme switching with system preference detection
 - **📱 Fully Responsive**: Optimized for mobile, tablet, and desktop
 - **🎭 Easter Eggs**: Hidden Konami code for rainbow mode (↑↑↓↓←→←→BA)
@@ -123,6 +164,7 @@ Open your browser and navigate to the displayed URL (usually `http://localhost:5
 - **♿ Accessible**: ARIA labels, keyboard navigation, screen reader support
 
 ### 🎮 **Gamification & Progress**
+
 - **🏆 XP System**: Earn experience points for learning activities
 - **🎯 Achievements**: Unlock badges (Common, Rare, Epic, Legendary)
 - **🔥 Daily Streaks**: Maintain learning streaks with fire animations
@@ -130,6 +172,7 @@ Open your browser and navigate to the displayed URL (usually `http://localhost:5
 - **🎊 Celebrations**: Confetti animations for milestones and completions
 
 ### 💻 **Interactive Learning**
+
 - **🖥️ Code Playground**: Monaco Editor with syntax highlighting
 - **🌍 Multi-Language**: JavaScript, Python, Java, C++ support
 - **🧪 Test Cases**: Automated testing with detailed feedback
@@ -137,6 +180,7 @@ Open your browser and navigate to the displayed URL (usually `http://localhost:5
 - **📚 Rich Content**: Step-by-step tutorials with diagrams
 
 ### 🏗️ **Architecture Topics**
+
 - **⚖️ Load Balancing**: Round-robin, least connections, IP hash
 - **🏢 Microservices**: Service decomposition, API gateways, circuit breakers
 - **💾 Caching**: Cache-aside, write-through, TTL strategies
@@ -144,6 +188,7 @@ Open your browser and navigate to the displayed URL (usually `http://localhost:5
 - **🔄 Message Queues**: Async communication, event-driven architecture
 
 ### 🎓 **Certification Paths**
+
 - **☁️ AWS**: Solutions Architect, Developer, DevOps certifications
 - **🔵 Azure**: Fundamentals, Associate, Expert level paths
 - **🟢 GCP**: Professional Cloud Architect, Developer tracks
@@ -153,6 +198,7 @@ Open your browser and navigate to the displayed URL (usually `http://localhost:5
 ## 🎯 Features
 
 ### Frontend (React + TypeScript)
+
 - **⚛️ React 19**: Latest concurrent features and hooks
 - **🔷 TypeScript**: Full type safety and IntelliSense support
 - **🎨 Tailwind CSS**: Utility-first styling with custom design system
@@ -163,6 +209,7 @@ Open your browser and navigate to the displayed URL (usually `http://localhost:5
 - **🎯 PWA**: Service worker, offline support, installable
 
 ### Backend (Node.js + Express)
+
 - **🔄 Currently Minimal**: Basic Express server setup
 - **🚀 Future Stack**: MongoDB, JWT, Redis, comprehensive API
 - **🛡️ Security**: Rate limiting, CORS, input validation, encryption
@@ -172,6 +219,7 @@ Open your browser and navigate to the displayed URL (usually `http://localhost:5
 ## 📚 Learning Modules
 
 ### 🏗️ System Design & Architecture
+
 - Load Balancing strategies
 - Microservices architecture
 - Caching patterns
@@ -181,6 +229,7 @@ Open your browser and navigate to the displayed URL (usually `http://localhost:5
 - And more...
 
 ### 💻 Data Structures & Algorithms
+
 - Interactive code playground
 - Multiple programming languages
 - Visual algorithm animations
@@ -189,6 +238,7 @@ Open your browser and navigate to the displayed URL (usually `http://localhost:5
 - Progress tracking
 
 ### 🎓 Cloud Certifications
+
 - AWS, Azure, GCP certifications
 - Interactive roadmaps
 - Module-based learning
@@ -206,6 +256,7 @@ Open your browser and navigate to the displayed URL (usually `http://localhost:5
 ## 🔧 Technology Stack
 
 ### Frontend
+
 - **React 19** - Latest React with concurrent features
 - **TypeScript** - Type-safe development
 - **Vite** - Fast build tool and dev server
@@ -215,14 +266,24 @@ Open your browser and navigate to the displayed URL (usually `http://localhost:5
 - **Monaco Editor** - Professional code editor
 - **Lucide React** - Beautiful icons
 
-### Backend
-- **Node.js** - JavaScript runtime
-- **Express.js** - Web framework
-- **MongoDB** - NoSQL database
-- **Mongoose** - MongoDB object modeling
-- **JWT** - Authentication tokens
-- **bcryptjs** - Password hashing
-- **Redis** - Caching (optional)
+### Backend (Go Microservices)
+
+- **Go 1.25** - High-performance backend language
+- **Fiber** - Express-inspired web framework
+- **Turso (libSQL)** - Distributed SQLite database
+- **Clerk** - Modern authentication and user management
+- **Docker** - Containerized microservices
+- **Webhooks** - Real-time user synchronization
+
+#### Microservices Architecture
+
+- **API Gateway** (Port 8080) - Request routing and authentication
+- **DSA Service** (Port 8082) - Data structures and algorithms
+- **System Design** (Port 8083) - Architecture tutorials
+- **AI System Design** (Port 8084) - AI-specific topics
+- **Certifications** (Port 8085) - Cloud certification paths
+- **Gamification** (Port 8086) - XP, achievements, streaks
+- **Webhooks** (Port 8087) - Clerk event handlers
 
 ## 🚢 Deployment
 
@@ -231,6 +292,7 @@ Open your browser and navigate to the displayed URL (usually `http://localhost:5
 Learning Management is built as a static web application and can be deployed to any modern hosting platform.
 
 #### Quick Deploy Commands
+
 ```bash
 cd frontend
 
@@ -244,6 +306,7 @@ npm run build
 #### 🚀 Recommended Platforms
 
 ##### **Vercel (Recommended)**
+
 ```bash
 # Install Vercel CLI
 npm i -g vercel
@@ -256,6 +319,7 @@ vercel --prod
 ```
 
 ##### **Netlify**
+
 ```bash
 # Install Netlify CLI
 npm install -g netlify-cli
@@ -267,6 +331,7 @@ netlify deploy --dir=dist --prod
 ```
 
 ##### **Cloudflare Pages**
+
 ```bash
 # Install Wrangler
 npm install -g wrangler
@@ -278,6 +343,7 @@ wrangler pages deploy dist
 ```
 
 ##### **GitHub Pages**
+
 ```bash
 # Add to package.json scripts:
 "deploy": "gh-pages -d dist"
@@ -289,6 +355,7 @@ npm run deploy
 ```
 
 ##### **Firebase Hosting**
+
 ```bash
 # Install Firebase CLI
 npm install -g firebase-tools
@@ -300,7 +367,9 @@ firebase deploy
 ```
 
 #### 🌐 Manual Deployment
+
 For any static hosting service:
+
 1. Run `npm run build` in the `frontend` directory
 2. Upload all files from the `dist` folder to your web server
 3. Configure your domain to point to the uploaded files
@@ -310,12 +379,14 @@ For any static hosting service:
 When the backend API is implemented, deploy to:
 
 #### **Railway**
+
 ```bash
 # Connect GitHub repo
 # Automatic deployments with environment variables
 ```
 
 #### **Heroku**
+
 ```bash
 # Create Heroku app
 heroku create learning-management-backend
@@ -328,6 +399,7 @@ git push heroku main
 ```
 
 #### **DigitalOcean App Platform**
+
 - Connect GitHub repository
 - Automatic builds and deployments
 - Environment variable management
@@ -335,18 +407,46 @@ git push heroku main
 
 ### 🔧 Environment Variables
 
-#### Frontend
-The frontend is configured to work without environment variables for development.
+#### Frontend (`.env` in `frontend/`)
 
-#### Backend (Future)
 ```env
-NODE_ENV=production
-PORT=5000
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret_key
-REDIS_URL=your_redis_url
-FRONTEND_URL=https://your-frontend-domain.com
+# Clerk Authentication (Required)
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
+
+# API Configuration
+VITE_API_URL=http://localhost:8080/api
 ```
+
+#### Backend (`.env` in `backend/`)
+
+```env
+# Server Configuration
+PORT=8080
+ENV=development
+
+# Turso Database (Required)
+TURSO_DATABASE_URL=libsql://your-database-name.turso.io
+TURSO_AUTH_TOKEN=your-auth-token-here
+
+# Clerk Authentication (Required)
+CLERK_SECRET_KEY=sk_test_your_secret_key_here
+
+# Clerk Webhooks (Optional - for user sync)
+CLERK_WEBHOOK_SECRET=whsec_your_webhook_secret_here
+
+# CORS Configuration
+FRONTEND_URL=http://localhost:5173
+
+# Rate Limiting
+RATE_LIMIT_MAX=100
+RATE_LIMIT_WINDOW=1m
+```
+
+> **📖 See Also**:
+>
+> - [CLERK_SETUP.md](./CLERK_SETUP.md) - Complete Clerk configuration guide
+> - [backend/.env.example](./backend/.env.example) - Backend environment template
+> - [frontend/.env.example](./frontend/.env.example) - Frontend environment template
 
 ### 📊 Performance Optimization
 
@@ -359,6 +459,7 @@ FRONTEND_URL=https://your-frontend-domain.com
 ## 🧪 Development
 
 ### Running Tests
+
 ```bash
 # Backend tests
 cd backend && npm test
@@ -368,6 +469,7 @@ cd frontend && npm run lint
 ```
 
 ### Code Quality
+
 - **ESLint**: Code linting and formatting
 - **TypeScript**: Type checking
 - **Prettier**: Code formatting (recommended)
@@ -380,6 +482,7 @@ cd frontend && npm run lint
 - `GET /api` - Basic API information
 
 All other endpoints will be implemented later including:
+
 - Authentication & user management
 - Learning content APIs
 - Progress tracking
@@ -388,6 +491,7 @@ All other endpoints will be implemented later including:
 ## 🗺️ Roadmap
 
 ### ✅ **Completed (v1.0)**
+
 - [x] Complete React frontend with TypeScript
 - [x] System Design & Architecture tutorials
 - [x] Interactive DSA code playground
@@ -399,6 +503,7 @@ All other endpoints will be implemented later including:
 - [x] Comprehensive UI component library
 
 ### 🚧 **In Development**
+
 - [ ] Backend API implementation
 - [ ] User authentication & profiles
 - [ ] Progress persistence with database
@@ -408,6 +513,7 @@ All other endpoints will be implemented later including:
 - [ ] Mobile app (React Native)
 
 ### 🎯 **Future Enhancements**
+
 - [ ] Multi-language support (i18n)
 - [ ] AI-powered learning recommendations
 - [ ] Real-time collaborative coding
@@ -421,12 +527,14 @@ All other endpoints will be implemented later including:
 We welcome contributions from the community! Here's how to get involved:
 
 ### 🚀 **Getting Started**
+
 1. Fork the repository
 2. Clone your fork: `git clone https://github.com/your-username/learning-management.git`
 3. Create a feature branch: `git checkout -b feature/amazing-feature`
 4. Install dependencies: `cd frontend && npm install`
 
 ### 💻 **Development Workflow**
+
 ```bash
 # Start development server
 npm run dev
@@ -441,6 +549,7 @@ npm run build
 ```
 
 ### 📝 **Contribution Guidelines**
+
 1. **Code Style**: Follow the existing TypeScript and React patterns
 2. **Testing**: Test your changes on different screen sizes
 3. **Documentation**: Update README for new features
@@ -448,6 +557,7 @@ npm run build
 5. **Pull Requests**: Provide detailed descriptions of changes
 
 ### 🎯 **Areas for Contribution**
+
 - **Content Creation**: Add new DSA problems or system design topics
 - **UI/UX Improvements**: Enhance animations, accessibility, or responsiveness
 - **New Features**: Implement items from the roadmap
@@ -455,12 +565,15 @@ npm run build
 - **Documentation**: Help improve guides and tutorials
 
 ### 📞 **Communication**
+
 - **Issues**: [GitHub Issues](https://github.com/your-repo/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/your-repo/discussions)
 - **Discord**: Join our community server (coming soon)
 
 ### 🎖️ **Recognition**
+
 Contributors will be:
+
 - Listed in CONTRIBUTORS.md
 - Mentioned in release notes
 - Featured in our community showcase
@@ -485,10 +598,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🎊 Success Stories
 
-*"Learning Management helped me land my dream job at FAANG. The system design tutorials were incredibly detailed and the DSA playground made algorithm practice actually fun!"*
+_"Learning Management helped me land my dream job at FAANG. The system design tutorials were incredibly detailed and the DSA playground made algorithm practice actually fun!"_
 — Sarah Chen, Senior Software Engineer at Google
 
-*"The gamification elements kept me motivated during my AWS certification prep. I went from 0 to certified in 3 months!"*
+_"The gamification elements kept me motivated during my AWS certification prep. I went from 0 to certified in 3 months!"_
 — Miguel Rodriguez, Cloud Architect
 
 ## 📞 Support & Community
@@ -512,7 +625,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with ❤️ for developers who want to master modern technologies.**
 
-*Learning Management - Where Learning Meets Gamification* 🚀✨
+_Learning Management - Where Learning Meets Gamification_ 🚀✨
 
 ---
 

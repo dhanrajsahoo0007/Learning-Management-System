@@ -98,13 +98,14 @@ export const duration = {
 
 /**
  * Animation easing functions
+ * Framer Motion expects arrays [x1, y1, x2, y2] for cubic-bezier
  */
 export const easing = {
-  linear: 'linear',
-  easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
-  easeOut: 'cubic-bezier(0, 0, 0.2, 1)',
-  easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
-  spring: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+  linear: [0, 0, 1, 1],
+  easeIn: [0.4, 0, 1, 1],
+  easeOut: [0, 0, 0.2, 1],
+  easeInOut: [0.4, 0, 0.2, 1],
+  spring: [0.68, -0.55, 0.265, 1.55],
 } as const;
 
 /**
