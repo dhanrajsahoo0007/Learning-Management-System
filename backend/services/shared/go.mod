@@ -3,6 +3,7 @@ module github.com/dhanrajsahoo0007/Learning-Management-System/backend/services/s
 go 1.25.5
 
 require (
+	github.com/clerk/clerk-sdk-go/v2 v2.5.0
 	github.com/gofiber/fiber/v2 v2.52.10
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/joho/godotenv v1.5.1
@@ -13,7 +14,6 @@ require (
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
-	github.com/clerk/clerk-sdk-go/v2 v2.5.0 // indirect
 	github.com/coder/websocket v1.8.12 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
