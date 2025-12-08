@@ -11,15 +11,22 @@ import (
 )
 
 // CORS creates a CORS middleware with allowed origins
+// CORS creates a CORS middleware with allowed origins
 func CORS(allowedOrigins []string) fiber.Handler {
-	// For development, allow all localhost origins
-	allowOriginsStr := strings.Join(allowedOrigins, ",")
-	// if len(allowedOrigins) > 0 && strings.Contains(allowedOrigins[0], "localhost") {
-	// 	allowOriginsStr = "http://localhost:*"
-	// }
-
 	return cors.New(cors.Config{
-		AllowOrigins:     allowOriginsStr,
+		AllowOriginsFunc: func(origin string) bool {
+			// Allow all localhost origins for development
+			if strings.HasPrefix(origin, "http://localhost") || strings.HasPrefix(origin, "https://localhost") {
+				return true
+			}
+			// Check against specifically allowed origins
+			for _, allowed := range allowedOrigins {
+				if allowed == origin {
+					return true
+				}
+			}
+			return false
+		},
 		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
 		AllowHeaders:     "Origin,Content-Type,Accept,Authorization",
 		AllowCredentials: true,

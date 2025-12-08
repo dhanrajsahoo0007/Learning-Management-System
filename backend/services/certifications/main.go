@@ -78,8 +78,8 @@ func main() {
 
 	// Certification routes
 	app.Get("/", certHandler.GetAll)
-	app.Get("/:id", certHandler.GetByID)
 	app.Get("/providers", certHandler.GetProviders)
+	app.Get("/:id", certHandler.GetByID)
 
 	// Start server in a goroutine
 	go func() {
