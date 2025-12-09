@@ -1,8 +1,8 @@
-import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
-import { User } from 'lucide-react';
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
 import { cn } from '@/lib/utils';
 
 interface MainLayoutProps {
@@ -27,17 +27,19 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <motion.div
-              className="flex items-center space-x-2"
-              whileHover={{ scale: 1.05 }}
-            >
-              <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">LF</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900 dark:text-white">
-                Learning Management
-              </span>
-            </motion.div>
+            <Link to="/">
+              <motion.div
+                className="flex items-center space-x-2"
+                whileHover={{ scale: 1.05 }}
+              >
+                <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">LF</span>
+                </div>
+                <span className="text-xl font-bold text-gray-900 dark:text-white">
+                  Learning Management
+                </span>
+              </motion.div>
+            </Link>
 
             {/* Desktop Navigation */}
             <div className={cn(
@@ -53,16 +55,25 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               <ThemeToggle />
 
               {/* Profile Avatar */}
-              <motion.button
-                className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors focus-ring"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                aria-label="Open user profile menu"
-                aria-haspopup="menu"
-                role="button"
-              >
-                <User className="w-4 h-4 text-gray-600 dark:text-gray-400" aria-hidden="true" />
-              </motion.button>
+              <div className="flex items-center">
+                <SignedIn>
+                  <UserButton
+                    afterSignOutUrl="/"
+                    appearance={{
+                      elements: {
+                        avatarBox: "w-8 h-8"
+                      }
+                    }}
+                  />
+                </SignedIn>
+                <SignedOut>
+                  <SignInButton mode="modal">
+                    <button className="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                      Sign In
+                    </button>
+                  </SignInButton>
+                </SignedOut>
+              </div>
             </div>
           </div>
         </div>

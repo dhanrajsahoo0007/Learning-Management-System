@@ -7,7 +7,9 @@ import { ProgressRing } from '@/components/ui/ProgressRing';
 import { CodeEditor } from '@/components/ui/CodeEditor';
 import { DSATopic } from '@/data/dsaData';
 import { dsaService } from '@/api/dsa';
-import { mockExecuteCode, ExecutionResult } from '@/lib/utils';
+import { ExecutionManager } from '@/lib/executors';
+import { ExecutionMode, ExecutionResult } from '@/lib/executors/types';
+
 import {
   ChevronDown,
   ChevronRight,
@@ -143,18 +145,25 @@ const CodePlayground: React.FC<{ topic: DSATopic }> = ({ topic }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
+  // State for execution results
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
+  const [executionMode, setExecutionMode] = useState<ExecutionMode>('browser');
 
   const handleRunCode = async () => {
     setIsRunning(true);
-    setOutput('Running...');
+    setOutput(`Running in ${executionMode} mode...`);
 
     try {
-      const result = await mockExecuteCode(code, selectedLanguage);
+      // Use test case input if available, otherwise empty
+      const input = topic.content.testCases?.[0]?.input || '';
+      
+      const result = await ExecutionManager.execute(code, selectedLanguage, input, executionMode);
       setExecutionResult(result);
-      setOutput(result.output);
+      
       if (result.error) {
-        setOutput(`Error: ${result.error}`);
+         setOutput(`Status: ${result.status}\nError:\n${result.error}`);
+      } else {
+         setOutput(result.output);
       }
     } catch (error) {
       setOutput(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -171,28 +180,48 @@ const CodePlayground: React.FC<{ topic: DSATopic }> = ({ topic }) => {
 
   return (
     <div className="space-y-6">
-      {/* Language Selector */}
+      {/* Language Selector and Mode Toggle */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Language:
-          </label>
-          <select
-            value={selectedLanguage}
-            onChange={(e) => {
-              const lang = e.target.value as keyof typeof templates;
-              setSelectedLanguage(lang);
-              setCode(templates[lang] || '');
-              setOutput('');
-              setExecutionResult(null);
-            }}
-            className="px-3 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus-ring"
-          >
-            <option value="javascript">JavaScript</option>
-            <option value="python">Python</option>
-            <option value="java">Java</option>
-            <option value="cpp">C++</option>
-          </select>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Language:
+            </label>
+            <select
+              value={selectedLanguage}
+              onChange={(e) => {
+                const lang = e.target.value as keyof typeof templates;
+                setSelectedLanguage(lang);
+                setCode(templates[lang] || '');
+                setOutput('');
+                setExecutionResult(null);
+              }}
+              className="px-3 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="javascript">JavaScript</option>
+              <option value="python">Python</option>
+              <option value="java">Java</option>
+              <option value="cpp">C++</option>
+            </select>
+          </div>
+
+          {/* Execution Mode Toggle */}
+           <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg flex items-center">
+            {['browser', 'cloud'].map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setExecutionMode(mode as ExecutionMode)}
+                className={cn(
+                  "px-3 py-1 text-xs font-medium rounded-md transition-all capitalize",
+                  executionMode === mode
+                    ? "bg-white dark:bg-gray-700 text-primary-600 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700 dark:text-gray-400"
+                )}
+              >
+                {mode}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="flex items-center space-x-2">

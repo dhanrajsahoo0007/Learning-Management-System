@@ -5,6 +5,7 @@ import { ClerkProvider } from '@clerk/clerk-react'
 import './index.css'
 import App from './App.tsx'
 import { AuthProvider } from './context/AuthContext'
+import { registerSW } from 'virtual:pwa-register'
 
 // Import Clerk publishable key from environment
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
@@ -24,3 +25,4 @@ createRoot(document.getElementById('root')!).render(
     </ClerkProvider>
   </StrictMode>,
 )
+registerSW({ immediate: true })
