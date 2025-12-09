@@ -9,7 +9,7 @@ import { DSATopic } from '@/data/dsaData';
 import { dsaService } from '@/api/dsa';
 import { ExecutionManager } from '@/lib/executors';
 import { ExecutionMode, ExecutionResult } from '@/lib/executors/types';
-// Execution imports moved down or handled in main block
+
 import {
   ChevronDown,
   ChevronRight,
