@@ -7,7 +7,8 @@ import { ProgressRing } from '@/components/ui/ProgressRing';
 import { CodeEditor } from '@/components/ui/CodeEditor';
 import { DSATopic } from '@/data/dsaData';
 import { dsaService } from '@/api/dsa';
-import { mockExecuteCode, ExecutionResult } from '@/lib/utils';
+import { executeCode, ExecutionResult } from '@/api/judge0';
+// mockExecuteCode removed
 import {
   ChevronDown,
   ChevronRight,
@@ -143,18 +144,24 @@ const CodePlayground: React.FC<{ topic: DSATopic }> = ({ topic }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
+  // State for execution results
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
 
   const handleRunCode = async () => {
     setIsRunning(true);
-    setOutput('Running...');
+    setOutput('Running on Judge0...');
 
     try {
-      const result = await mockExecuteCode(code, selectedLanguage);
+      // Use test case input if available, otherwise empty
+      const input = topic.content.testCases?.[0]?.input || '';
+      
+      const result = await executeCode(code, selectedLanguage, input);
       setExecutionResult(result);
-      setOutput(result.output);
+      
       if (result.error) {
-        setOutput(`Error: ${result.error}`);
+         setOutput(`Status: ${result.status}\nError:\n${result.error}`);
+      } else {
+         setOutput(result.output);
       }
     } catch (error) {
       setOutput(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
