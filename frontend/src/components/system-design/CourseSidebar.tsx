@@ -4,39 +4,43 @@ import {
   AppWindow,
   BookOpen,
   ChevronLeft,
+  CircleDot,
+  Combine,
   Compass,
   Cpu,
+  FolderTree,
   Gauge,
   Layers,
+  Minimize2,
   PanelLeftClose,
+  Presentation,
   Search,
   Sparkles,
+  TreePine,
+  TrendingUp,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { isFeatureEnabled } from '@/config/features';
 import {
   clusterSectionItems,
   findSectionForTopic,
-  getCourseHomePath,
-  getCourseTitle,
-  getOutlineForTrack,
+  getOutlineForCourse,
+  getSiblingCourse,
+  type Course,
   type CourseOutlineSection,
   type OutlineSectionIcon,
 } from '@/data/courseOutline';
-import type { TopicTrack } from '@/data/systemDesignTypes';
 import { useCompletedLessons } from '@/hooks/useCompletedLessons';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
 import { LessonItem } from './sidebar/LessonItem';
 import { SectionHeader } from './sidebar/SectionHeader';
 import { SubGroupLabel } from './sidebar/SubGroupLabel';
 
 interface CourseSidebarProps {
-  track: TopicTrack;
+  course: Course;
   topicId?: string;
   onNavigate?: () => void;
   onCollapse?: () => void;
@@ -50,10 +54,18 @@ const sectionIcons: Record<OutlineSectionIcon, LucideIcon> = {
   BookOpen,
   Cpu,
   Sparkles,
+  TrendingUp,
+  FolderTree,
+  CircleDot,
+  TreePine,
+  Minimize2,
+  Combine,
+  Presentation,
 };
 
-export function CourseSidebar({ track, topicId, onNavigate, onCollapse }: CourseSidebarProps) {
-  const outline = useMemo(() => getOutlineForTrack(track), [track]);
+export function CourseSidebar({ course, topicId, onNavigate, onCollapse }: CourseSidebarProps) {
+  const outline = useMemo(() => getOutlineForCourse(course.id), [course.id]);
+  const sibling = getSiblingCourse(course);
   const { isComplete } = useCompletedLessons();
   const [query, setQuery] = useState('');
   const [openSections, setOpenSections] = useState<Set<string>>(() => {
@@ -63,7 +75,7 @@ export function CourseSidebar({ track, topicId, onNavigate, onCollapse }: Course
 
   useEffect(() => {
     setQuery('');
-  }, [track]);
+  }, [course.id]);
 
   useEffect(() => {
     const active = findSectionForTopic(outline, topicId);
@@ -117,15 +129,28 @@ export function CourseSidebar({ track, topicId, onNavigate, onCollapse }: Course
           )}
         </div>
 
-        <Link
-          to={getCourseHomePath(track)}
-          onClick={onNavigate}
-          className="block text-sm font-semibold hover:text-primary"
-        >
-          {getCourseTitle(track)}
-        </Link>
+        <div>
+          <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+            {course.familyTitle}
+          </p>
+          <Link
+            to={course.homePath}
+            onClick={onNavigate}
+            className="block text-sm font-semibold hover:text-primary"
+          >
+            {course.title}
+          </Link>
+        </div>
 
-        <TrackSwitcher track={track} onNavigate={onNavigate} />
+        {sibling && (
+          <Link
+            to={sibling.homePath}
+            onClick={onNavigate}
+            className="block text-xs text-muted-foreground hover:text-foreground"
+          >
+            Also: {sibling.title}
+          </Link>
+        )}
 
         <div>
           <div className="mb-1.5 flex items-center justify-between text-xs text-muted-foreground">
@@ -201,37 +226,6 @@ export function CourseSidebar({ track, topicId, onNavigate, onCollapse }: Course
           )}
         </nav>
       </ScrollArea>
-    </div>
-  );
-}
-
-function TrackSwitcher({ track, onNavigate }: { track: TopicTrack; onNavigate?: () => void }) {
-  const showClassic = isFeatureEnabled('systemDesign');
-  const showAI = isFeatureEnabled('aiSystemDesign');
-  if (!showClassic || !showAI) return null;
-
-  return (
-    <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
-      <Link
-        to="/system-design"
-        onClick={onNavigate}
-        className={cn(
-          'rounded-md px-2 py-1.5 text-center text-xs font-medium',
-          track === 'classic' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-        )}
-      >
-        System Design
-      </Link>
-      <Link
-        to="/system-design/ai"
-        onClick={onNavigate}
-        className={cn(
-          'rounded-md px-2 py-1.5 text-center text-xs font-medium',
-          track === 'ai' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-        )}
-      >
-        AI
-      </Link>
     </div>
   );
 }

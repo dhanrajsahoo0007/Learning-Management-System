@@ -1,0 +1,29 @@
+{
+  "source": "/Users/dhanraj/Workspace/AI-ML/apps/web/content",
+  "copiedAt": "2026-08-30",
+  "totalMdxFiles": 96,
+  "sections": {
+    "learning-paths": {
+      "hubs": ["machine-learning.mdx", "agentic-ai.mdx", "deep-learning.mdx", "generative-ai.mdx", "llms.mdx"],
+      "leafCount": 33,
+      "leafDir": "machine-learning/"
+    },
+    "system-design": {
+      "hubs": ["ml-system-design.mdx"],
+      "leafCount": 54,
+      "leafDir": "ml-system-design/"
+    },
+    "interviews": {
+      "hubs": [],
+      "leafCount": 3,
+      "files": ["ml-fundamentals.mdx", "deep-learning.mdx", "llms.mdx"]
+    }
+  },
+  "expected": {
+    "total": 96,
+    "leafTopics": 87,
+    "modelCards": 87,
+    "interviewQuestions": 255,
+    "detailsBlocks": 6
+  }
+}

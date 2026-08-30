@@ -1,23 +1,12 @@
 import React from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Check, Circle } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
 import { ArchitectureTopic } from '@/data/systemDesignTypes';
 import { findTopicById, getTopicPath } from '@/data/curriculum';
-import { getCourseHomePath, getCourseTitle, getOutlineNeighbors, parseCoursePath } from '@/data/courseOutline';
-import { useCompletedLessons } from '@/hooks/useCompletedLessons';
 import { DiagramBlock } from './DiagramBlock';
+import { LessonShell } from './LessonShell';
 
 const Section: React.FC<{ title: string; children: React.ReactNode; hide?: boolean }> = ({
   title,
@@ -51,11 +40,6 @@ const BulletList: React.FC<{ items?: string[] }> = ({ items }) => {
 
 export const LessonView: React.FC<{ topic: ArchitectureTopic }> = ({ topic }) => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { track } = parseCoursePath(location.pathname);
-  const { prev, next } = getOutlineNeighbors(topic.id, track);
-  const { isComplete, toggleComplete } = useCompletedLessons();
-  const complete = isComplete(topic.id);
   const content = topic.content;
   const walkthrough = content.walkthrough?.length ? content.walkthrough : content.steps;
   const related = (content.relatedTopics || [])
@@ -63,66 +47,7 @@ export const LessonView: React.FC<{ topic: ArchitectureTopic }> = ({ topic }) =>
     .filter((item): item is ArchitectureTopic => Boolean(item));
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to={getCourseHomePath(track)}>{getCourseTitle(track)}</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{topic.title}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-        <Button
-          type="button"
-          variant={complete ? 'secondary' : 'outline'}
-          size="sm"
-          onClick={() => toggleComplete(topic.id)}
-        >
-          {complete ? <Check className="size-4" /> : <Circle className="size-4" />}
-          {complete ? 'Completed' : 'Mark complete'}
-        </Button>
-      </div>
-
-      <div className="mb-8">
-        <div className="flex flex-wrap items-center gap-2 mb-3">
-          <Badge variant={topic.section === 'fundamentals' ? 'default' : 'secondary'}>
-            {topic.section === 'fundamentals' ? 'Fundamentals' : 'Product design'}
-          </Badge>
-          <Badge variant={
-            topic.difficulty === 'Beginner' ? 'success' :
-            topic.difficulty === 'Intermediate' ? 'warning' : 'danger'
-          }>
-            {topic.difficulty}
-          </Badge>
-          <span className="text-sm text-muted-foreground">{topic.estimatedMinutes} min</span>
-        </div>
-        <h1 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl">
-          {topic.title}
-        </h1>
-        <p className="text-lg text-muted-foreground">{topic.description}</p>
-      </div>
-
-      {topic.prerequisites.length > 0 && (
-        <div className="mb-6 flex flex-wrap gap-2">
-          <span className="self-center text-sm text-muted-foreground">Prerequisites:</span>
-          {topic.prerequisites.map((id) => {
-            const pre = findTopicById(id);
-            if (!pre) return null;
-            return (
-              <Button key={id} type="button" variant="outline" size="sm" onClick={() => navigate(getTopicPath(pre))}>
-                {pre.title}
-              </Button>
-            );
-          })}
-        </div>
-      )}
-
+    <LessonShell topic={topic}>
       <div className="space-y-6">
         <Section title="Why it exists">
           <p className="leading-relaxed text-foreground">{content.whyItExists || content.overview}</p>
@@ -310,39 +235,7 @@ export const LessonView: React.FC<{ topic: ArchitectureTopic }> = ({ topic }) =>
           </Section>
         )}
 
-        <nav aria-label="Lesson pagination" className="grid gap-3 border-t pt-6 sm:grid-cols-2">
-          {prev ? (
-            <Button
-              type="button"
-              variant="outline"
-              className="h-auto justify-start gap-3 py-3"
-              onClick={() => navigate(getTopicPath(prev))}
-            >
-              <ArrowLeft className="size-4 shrink-0" />
-              <span className="text-left">
-                <span className="block text-xs text-muted-foreground">Previous</span>
-                <span className="font-medium">{prev.title}</span>
-              </span>
-            </Button>
-          ) : (
-            <div />
-          )}
-          {next && (
-            <Button
-              type="button"
-              variant="outline"
-              className="h-auto justify-end gap-3 py-3"
-              onClick={() => navigate(getTopicPath(next))}
-            >
-              <span className="text-right">
-                <span className="block text-xs text-muted-foreground">Next</span>
-                <span className="font-medium">{next.title}</span>
-              </span>
-              <ArrowRight className="size-4 shrink-0" />
-            </Button>
-          )}
-        </nav>
       </div>
-    </div>
+    </LessonShell>
   );
 };

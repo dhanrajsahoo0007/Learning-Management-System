@@ -1,0 +1,695 @@
+{
+  "totals": {
+    "files": 96,
+    "leafTopics": 87,
+    "modelCards": 87,
+    "interviewQuestions": 255,
+    "detailsBlocks": 6,
+    "pathOverviews": 5,
+    "interviews": 3,
+    "iconFallbacks": 0
+  },
+  "coverage": [
+    {
+      "file": "interviews/deep-learning",
+      "sourceWords": 66,
+      "generatedWords": 66,
+      "delta": 0,
+      "blocks": 2
+    },
+    {
+      "file": "interviews/llms",
+      "sourceWords": 79,
+      "generatedWords": 79,
+      "delta": 0,
+      "blocks": 2
+    },
+    {
+      "file": "interviews/ml-fundamentals",
+      "sourceWords": 83,
+      "generatedWords": 83,
+      "delta": 0,
+      "blocks": 2
+    },
+    {
+      "file": "learning-paths/agentic-ai",
+      "sourceWords": 49,
+      "generatedWords": 49,
+      "delta": 0,
+      "blocks": 6
+    },
+    {
+      "file": "learning-paths/deep-learning",
+      "sourceWords": 59,
+      "generatedWords": 59,
+      "delta": 0,
+      "blocks": 6
+    },
+    {
+      "file": "learning-paths/generative-ai",
+      "sourceWords": 51,
+      "generatedWords": 51,
+      "delta": 0,
+      "blocks": 6
+    },
+    {
+      "file": "learning-paths/llms",
+      "sourceWords": 46,
+      "generatedWords": 46,
+      "delta": 0,
+      "blocks": 6
+    },
+    {
+      "file": "learning-paths/machine-learning/bagging",
+      "sourceWords": 364,
+      "generatedWords": 395,
+      "delta": 31,
+      "blocks": 8
+    },
+    {
+      "file": "learning-paths/machine-learning/boosting",
+      "sourceWords": 325,
+      "generatedWords": 349,
+      "delta": 24,
+      "blocks": 8
+    },
+    {
+      "file": "learning-paths/machine-learning/catboost",
+      "sourceWords": 293,
+      "generatedWords": 380,
+      "delta": 87,
+      "blocks": 8
+    },
+    {
+      "file": "learning-paths/machine-learning/dbscan",
+      "sourceWords": 372,
+      "generatedWords": 400,
+      "delta": 28,
+      "blocks": 8
+    },
+    {
+      "file": "learning-paths/machine-learning/decision-tree-classifier",
+      "sourceWords": 392,
+      "generatedWords": 417,
+      "delta": 25,
+      "blocks": 13
+    },
+    {
+      "file": "learning-paths/machine-learning/decision-tree-regression",
+      "sourceWords": 347,
+      "generatedWords": 373,
+      "delta": 26,
+      "blocks": 10
+    },
+    {
+      "file": "learning-paths/machine-learning/decision-tree",
+      "sourceWords": 414,
+      "generatedWords": 443,
+      "delta": 29,
+      "blocks": 8
+    },
+    {
+      "file": "learning-paths/machine-learning/elasticnet-regression",
+      "sourceWords": 359,
+      "generatedWords": 384,
+      "delta": 25,
+      "blocks": 10
+    },
+    {
+      "file": "learning-paths/machine-learning/extra-trees",
+      "sourceWords": 368,
+      "generatedWords": 401,
+      "delta": 33,
+      "blocks": 7
+    },
+    {
+      "file": "learning-paths/machine-learning/gaussian-mixture-models",
+      "sourceWords": 374,
+      "generatedWords": 407,
+      "delta": 33,
+      "blocks": 9
+    },
+    {
+      "file": "learning-paths/machine-learning/gradient-boosting-classifier",
+      "sourceWords": 398,
+      "generatedWords": 423,
+      "delta": 25,
+      "blocks": 11
+    },
+    {
+      "file": "learning-paths/machine-learning/gradient-boosting-regression",
+      "sourceWords": 360,
+      "generatedWords": 387,
+      "delta": 27,
+      "blocks": 9
+    },
+    {
+      "file": "learning-paths/machine-learning/gradient-boosting",
+      "sourceWords": 364,
+      "generatedWords": 397,
+      "delta": 33,
+      "blocks": 8
+    },
+    {
+      "file": "learning-paths/machine-learning/hierarchical-clustering",
+      "sourceWords": 388,
+      "generatedWords": 416,
+      "delta": 28,
+      "blocks": 9
+    },
+    {
+      "file": "learning-paths/machine-learning/k-means-clustering",
+      "sourceWords": 397,
+      "generatedWords": 431,
+      "delta": 34,
+      "blocks": 8
+    },
+    {
+      "file": "learning-paths/machine-learning/k-nearest-neighbors",
+      "sourceWords": 410,
+      "generatedWords": 435,
+      "delta": 25,
+      "blocks": 9
+    },
+    {
+      "file": "learning-paths/machine-learning/lasso-ridge-regression",
+      "sourceWords": 378,
+      "generatedWords": 404,
+      "delta": 26,
+      "blocks": 11
+    },
+    {
+      "file": "learning-paths/machine-learning/lightgbm",
+      "sourceWords": 360,
+      "generatedWords": 386,
+      "delta": 26,
+      "blocks": 8
+    },
+    {
+      "file": "learning-paths/machine-learning/linear-regression",
+      "sourceWords": 344,
+      "generatedWords": 378,
+      "delta": 34,
+      "blocks": 9
+    },
+    {
+      "file": "learning-paths/machine-learning/logistic-regression",
+      "sourceWords": 384,
+      "generatedWords": 413,
+      "delta": 29,
+      "blocks": 10
+    },
+    {
+      "file": "learning-paths/machine-learning/naive-bayes",
+      "sourceWords": 349,
+      "generatedWords": 383,
+      "delta": 34,
+      "blocks": 9
+    },
+    {
+      "file": "learning-paths/machine-learning/pca",
+      "sourceWords": 411,
+      "generatedWords": 434,
+      "delta": 23,
+      "blocks": 9
+    },
+    {
+      "file": "learning-paths/machine-learning/polynomial-regression",
+      "sourceWords": 342,
+      "generatedWords": 368,
+      "delta": 26,
+      "blocks": 10
+    },
+    {
+      "file": "learning-paths/machine-learning/random-forest-classifier",
+      "sourceWords": 372,
+      "generatedWords": 408,
+      "delta": 36,
+      "blocks": 10
+    },
+    {
+      "file": "learning-paths/machine-learning/random-forest-regression",
+      "sourceWords": 338,
+      "generatedWords": 370,
+      "delta": 32,
+      "blocks": 9
+    },
+    {
+      "file": "learning-paths/machine-learning/random-forest",
+      "sourceWords": 402,
+      "generatedWords": 435,
+      "delta": 33,
+      "blocks": 7
+    },
+    {
+      "file": "learning-paths/machine-learning/stacking",
+      "sourceWords": 324,
+      "generatedWords": 352,
+      "delta": 28,
+      "blocks": 8
+    },
+    {
+      "file": "learning-paths/machine-learning/support-vector-machines",
+      "sourceWords": 393,
+      "generatedWords": 417,
+      "delta": 24,
+      "blocks": 11
+    },
+    {
+      "file": "learning-paths/machine-learning/support-vector-regression",
+      "sourceWords": 383,
+      "generatedWords": 409,
+      "delta": 26,
+      "blocks": 11
+    },
+    {
+      "file": "learning-paths/machine-learning/t-sne",
+      "sourceWords": 370,
+      "generatedWords": 399,
+      "delta": 29,
+      "blocks": 9
+    },
+    {
+      "file": "learning-paths/machine-learning/umap",
+      "sourceWords": 401,
+      "generatedWords": 431,
+      "delta": 30,
+      "blocks": 9
+    },
+    {
+      "file": "learning-paths/machine-learning/voting",
+      "sourceWords": 300,
+      "generatedWords": 326,
+      "delta": 26,
+      "blocks": 9
+    },
+    {
+      "file": "learning-paths/machine-learning/xgboost",
+      "sourceWords": 374,
+      "generatedWords": 407,
+      "delta": 33,
+      "blocks": 8
+    },
+    {
+      "file": "learning-paths/machine-learning",
+      "sourceWords": 0,
+      "generatedWords": 0,
+      "delta": 0,
+      "blocks": 0
+    },
+    {
+      "file": "system-design/ml-system-design/ab-testing-prompts-models",
+      "sourceWords": 423,
+      "generatedWords": 476,
+      "delta": 53,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/access-control-rbac",
+      "sourceWords": 513,
+      "generatedWords": 540,
+      "delta": 27,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/alerting-dashboards",
+      "sourceWords": 474,
+      "generatedWords": 524,
+      "delta": 50,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/automated-regression-testing",
+      "sourceWords": 428,
+      "generatedWords": 473,
+      "delta": 45,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/automated-retraining-finetuning",
+      "sourceWords": 551,
+      "generatedWords": 582,
+      "delta": 31,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/batch-and-streaming",
+      "sourceWords": 39,
+      "generatedWords": 39,
+      "delta": 0,
+      "blocks": 6
+    },
+    {
+      "file": "system-design/ml-system-design/batch-vs-realtime-inference",
+      "sourceWords": 408,
+      "generatedWords": 446,
+      "delta": 38,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/bias-toxicity-detection",
+      "sourceWords": 489,
+      "generatedWords": 516,
+      "delta": 27,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/chain-flow-orchestration",
+      "sourceWords": 500,
+      "generatedWords": 534,
+      "delta": 34,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/cicd-ct-pipelines",
+      "sourceWords": 615,
+      "generatedWords": 651,
+      "delta": 36,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/compliance-audit-logging",
+      "sourceWords": 521,
+      "generatedWords": 554,
+      "delta": 33,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/containerization-orchestration",
+      "sourceWords": 594,
+      "generatedWords": 638,
+      "delta": 44,
+      "blocks": 6
+    },
+    {
+      "file": "system-design/ml-system-design/content-moderation-red-teaming",
+      "sourceWords": 504,
+      "generatedWords": 539,
+      "delta": 35,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/continuous-data-knowledge-integration",
+      "sourceWords": 482,
+      "generatedWords": 510,
+      "delta": 28,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/continuous-improvement-pipeline",
+      "sourceWords": 453,
+      "generatedWords": 500,
+      "delta": 47,
+      "blocks": 6
+    },
+    {
+      "file": "system-design/ml-system-design/conversation-short-term-memory",
+      "sourceWords": 465,
+      "generatedWords": 494,
+      "delta": 29,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/cost-tracking-attribution",
+      "sourceWords": 473,
+      "generatedWords": 513,
+      "delta": 40,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/data-privacy-pii-handling",
+      "sourceWords": 500,
+      "generatedWords": 533,
+      "delta": 33,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/data-sources-connectors",
+      "sourceWords": 512,
+      "generatedWords": 555,
+      "delta": 43,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/data-versioning-lineage",
+      "sourceWords": 463,
+      "generatedWords": 494,
+      "delta": 31,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/document-processing-chunking",
+      "sourceWords": 527,
+      "generatedWords": 560,
+      "delta": 33,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/drift-detection",
+      "sourceWords": 447,
+      "generatedWords": 489,
+      "delta": 42,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/embedding-generation-pipeline",
+      "sourceWords": 497,
+      "generatedWords": 536,
+      "delta": 39,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/experiment-tracking-version-control",
+      "sourceWords": 545,
+      "generatedWords": 578,
+      "delta": 33,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/gpu-tpu-resource-management",
+      "sourceWords": 502,
+      "generatedWords": 540,
+      "delta": 38,
+      "blocks": 6
+    },
+    {
+      "file": "system-design/ml-system-design/guardrails-output-validation",
+      "sourceWords": 481,
+      "generatedWords": 512,
+      "delta": 31,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/hallucination-safety-detection",
+      "sourceWords": 488,
+      "generatedWords": 526,
+      "delta": 38,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/human-feedback-collection",
+      "sourceWords": 379,
+      "generatedWords": 419,
+      "delta": 40,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/ingestion-orchestration",
+      "sourceWords": 446,
+      "generatedWords": 477,
+      "delta": 31,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/knowledge-base-update-automation",
+      "sourceWords": 422,
+      "generatedWords": 462,
+      "delta": 40,
+      "blocks": 6
+    },
+    {
+      "file": "system-design/ml-system-design/latency-token-monitoring",
+      "sourceWords": 473,
+      "generatedWords": 518,
+      "delta": 45,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/llm-as-judge-evaluation",
+      "sourceWords": 477,
+      "generatedWords": 526,
+      "delta": 49,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/llm-inference-engine",
+      "sourceWords": 438,
+      "generatedWords": 473,
+      "delta": 35,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/load-balancing-autoscaling",
+      "sourceWords": 451,
+      "generatedWords": 490,
+      "delta": 39,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/long-term-vector-memory",
+      "sourceWords": 460,
+      "generatedWords": 496,
+      "delta": 36,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/memory-summarization-compression",
+      "sourceWords": 419,
+      "generatedWords": 449,
+      "delta": 30,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/model-registry-governance",
+      "sourceWords": 522,
+      "generatedWords": 550,
+      "delta": 28,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/multi-model-routing-fallbacks",
+      "sourceWords": 409,
+      "generatedWords": 452,
+      "delta": 43,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/multi-region-edge-deployment",
+      "sourceWords": 491,
+      "generatedWords": 537,
+      "delta": 46,
+      "blocks": 6
+    },
+    {
+      "file": "system-design/ml-system-design/offline-evaluation-benchmarks",
+      "sourceWords": 447,
+      "generatedWords": 491,
+      "delta": 44,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/online-production-evaluation",
+      "sourceWords": 445,
+      "generatedWords": 493,
+      "delta": 48,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/online-serving",
+      "sourceWords": 67,
+      "generatedWords": 67,
+      "delta": 0,
+      "blocks": 6
+    },
+    {
+      "file": "system-design/ml-system-design/prompt-management-optimization",
+      "sourceWords": 524,
+      "generatedWords": 560,
+      "delta": 36,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/prompt-templates-versioning",
+      "sourceWords": 551,
+      "generatedWords": 582,
+      "delta": 31,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/quality-metrics",
+      "sourceWords": 469,
+      "generatedWords": 513,
+      "delta": 44,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/quantization-optimization",
+      "sourceWords": 442,
+      "generatedWords": 478,
+      "delta": 36,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/rate-limiting-throttling",
+      "sourceWords": 445,
+      "generatedWords": 490,
+      "delta": 45,
+      "blocks": 6
+    },
+    {
+      "file": "system-design/ml-system-design/reinforcement-preference-learning",
+      "sourceWords": 500,
+      "generatedWords": 540,
+      "delta": 40,
+      "blocks": 6
+    },
+    {
+      "file": "system-design/ml-system-design/rollback-blue-green-deployment",
+      "sourceWords": 458,
+      "generatedWords": 492,
+      "delta": 34,
+      "blocks": 6
+    },
+    {
+      "file": "system-design/ml-system-design/semantic-caching",
+      "sourceWords": 442,
+      "generatedWords": 468,
+      "delta": 26,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/state-persistence-retrieval",
+      "sourceWords": 443,
+      "generatedWords": 475,
+      "delta": 32,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/structured-output-generation",
+      "sourceWords": 503,
+      "generatedWords": 535,
+      "delta": 32,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/tracing-logging",
+      "sourceWords": 568,
+      "generatedWords": 617,
+      "delta": 49,
+      "blocks": 7
+    },
+    {
+      "file": "system-design/ml-system-design/user-feedback-collection",
+      "sourceWords": 417,
+      "generatedWords": 457,
+      "delta": 40,
+      "blocks": 6
+    },
+    {
+      "file": "system-design/ml-system-design",
+      "sourceWords": 0,
+      "generatedWords": 0,
+      "delta": 0,
+      "blocks": 0
+    }
+  ],
+  "assertions": {
+    "files": true,
+    "leaves": true,
+    "modelCards": true,
+    "interviewQuestions": true,
+    "detailsBlocks": true,
+    "bijection": true,
+    "unknownTags": true
+  }
+}

@@ -6,9 +6,10 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { StreakCounter } from '@/components/shared/StreakCounter';
 import { AchievementShowcase } from '@/components/shared/AchievementShowcase';
-import { BookOpen, Clock, Target, Award, Flame, Cpu } from 'lucide-react';
+import { BookOpen, Clock, Award, Flame } from 'lucide-react';
 import { fadeIn, staggerContainer, staggerItem } from '@/utils/animations';
 import { isFeatureEnabled } from '@/config/features';
+import { getCourses } from '@/data/courseOutline';
 
 const Dashboard: React.FC = () => {
   const { stats } = useGamification();
@@ -25,8 +26,13 @@ const Dashboard: React.FC = () => {
   ].filter((stat) => stat.show);
 
   const continueLearning = [
-    { title: 'System Design', description: 'Continue your journey', path: '/system-design', icon: Target, show: isFeatureEnabled('systemDesign') },
-    { title: 'AI System Design', description: 'Design AI-powered systems', path: '/system-design/ai', icon: Cpu, show: isFeatureEnabled('aiSystemDesign') },
+    ...getCourses().map((course) => ({
+      title: `${course.familyTitle} · ${course.title}`,
+      description: course.blurb,
+      path: course.homePath,
+      icon: BookOpen,
+      show: true,
+    })),
     { title: 'DSA Practice', description: 'Solve problems', path: '/dsa', icon: BookOpen, show: isFeatureEnabled('dsa') },
     { title: 'Certifications', description: 'Earn credentials', path: '/certifications', icon: Award, show: isFeatureEnabled('certifications') },
   ].filter((item) => item.show);

@@ -74,8 +74,11 @@ export function MainLayout({
 
 function BottomNav() {
   const navItems = [
-    { id: 'system-design', label: 'System Design', path: '/system-design', show: isFeatureEnabled('systemDesign') },
-    { id: 'ai-system-design', label: 'AI Design', path: '/system-design/ai', show: isFeatureEnabled('aiSystemDesign') },
+    { id: 'home', label: 'Home', path: '/', show: true },
+    { id: 'fundamentals', label: 'Fundamentals', path: '/system-design/fundamentals', show: isFeatureEnabled('systemDesign') },
+    { id: 'problems', label: 'Problems', path: '/system-design/problems', show: isFeatureEnabled('systemDesign') },
+    { id: 'ai-fundamentals', label: 'AI Fundamentals', path: '/system-design/ai/fundamentals', show: isFeatureEnabled('aiSystemDesign') },
+    { id: 'ai-ml', label: 'AI / ML', path: '/ai-ml/learning-paths', show: isFeatureEnabled('aiMl') },
     { id: 'dsa', label: 'DSA', path: '/dsa', show: isFeatureEnabled('dsa') },
     { id: 'certifications', label: 'Certifications', path: '/certifications', show: isFeatureEnabled('certifications') },
   ].filter((item) => item.show);

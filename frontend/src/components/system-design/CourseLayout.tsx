@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { Menu, PanelLeftOpen } from 'lucide-react';
 import { CourseSidebar } from './CourseSidebar';
 import { ResizeHandle, SIDEBAR_WIDTH_KEY, readSidebarWidth } from './sidebar/ResizeHandle';
-import { getCourseTitle, parseCoursePath } from '@/data/courseOutline';
+import { parseCoursePath } from '@/data/courseOutline';
 import { findTopicById } from '@/data/curriculum';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -21,7 +21,7 @@ function readCollapsed(): boolean {
 
 export function CourseLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
-  const { track, topicId } = parseCoursePath(location.pathname);
+  const { course, topicId } = parseCoursePath(location.pathname);
   const topic = topicId ? findTopicById(topicId) : undefined;
 
   const [collapsed, setCollapsed] = useState(readCollapsed);
@@ -48,7 +48,7 @@ export function CourseLayout({ children }: { children: ReactNode }) {
     }
   }, [sidebarWidth]);
 
-  const heading = topic?.title ?? getCourseTitle(track);
+  const heading = topic?.title ?? `${course.familyTitle} · ${course.title}`;
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)]">
@@ -69,13 +69,13 @@ export function CourseLayout({ children }: { children: ReactNode }) {
           >
             <PanelLeftOpen className="size-5" />
             <span className="text-[10px] font-semibold tracking-widest [writing-mode:vertical-rl]">
-              {getCourseTitle(track)}
+              {course.title}
             </span>
           </Button>
         ) : (
           <>
             <div className="flex h-full min-h-0 w-full flex-col">
-              <CourseSidebar track={track} topicId={topicId} onCollapse={() => setCollapsed(true)} />
+              <CourseSidebar course={course} topicId={topicId} onCollapse={() => setCollapsed(true)} />
             </div>
             <ResizeHandle width={sidebarWidth} onWidthChange={setSidebarWidth} />
           </>
@@ -98,7 +98,7 @@ export function CourseLayout({ children }: { children: ReactNode }) {
           <SheetHeader className="sr-only">
             <SheetTitle>Course outline</SheetTitle>
           </SheetHeader>
-          <CourseSidebar track={track} topicId={topicId} onNavigate={() => setDrawerOpen(false)} />
+          <CourseSidebar course={course} topicId={topicId} onNavigate={() => setDrawerOpen(false)} />
         </SheetContent>
       </Sheet>
     </div>
