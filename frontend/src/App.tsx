@@ -36,7 +36,7 @@ const App: React.FC = () => {
     {
       id: 'ai-system-design',
       label: 'AI System Design',
-      path: '/system-design/ai/fundamentals',
+      path: '/system-design/ai/ml-system-design',
       icon: <Grid3X3 className="w-4 h-4" />,
     },
     {

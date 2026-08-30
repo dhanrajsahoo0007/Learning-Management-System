@@ -17,7 +17,7 @@ export const StreakCounter: React.FC<StreakCounterProps> = ({
     if (days >= 30) return 'text-red-500';
     if (days >= 14) return 'text-orange-500';
     if (days >= 7) return 'text-yellow-500';
-    return 'text-gray-500';
+    return 'text-muted-foreground';
   };
 
   const getStreakIntensity = (days: number) => {
@@ -29,7 +29,7 @@ export const StreakCounter: React.FC<StreakCounterProps> = ({
   return (
     <motion.div
       className={cn(
-        'flex items-center space-x-2 px-3 py-2 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm',
+        'flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 shadow-sm',
         className
       )}
       initial={{ scale: 0 }}

@@ -1,24 +1,43 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useGamification } from '@/context/GamificationContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Star, Award, Crown } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Check, Trophy, Star, Award, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+import type { Achievement } from '@/api/gamification';
 
-const rarityConfig = {
-  common: { color: 'text-gray-500', bgColor: 'bg-gray-100 dark:bg-gray-800', borderColor: 'border-gray-200 dark:border-gray-700' },
-  rare: { color: 'text-blue-500', bgColor: 'bg-blue-100 dark:bg-blue-900', borderColor: 'border-blue-200 dark:border-blue-800' },
-  epic: { color: 'text-purple-500', bgColor: 'bg-purple-100 dark:bg-purple-900', borderColor: 'border-purple-200 dark:border-purple-800' },
-  legendary: { color: 'text-yellow-500', bgColor: 'bg-yellow-100 dark:bg-yellow-900', borderColor: 'border-yellow-200 dark:border-yellow-800' }
+const RARITY_ACCENT: Record<Achievement['rarity'], string> = {
+  common: 'text-muted-foreground',
+  rare: 'text-primary',
+  epic: 'text-purple-500',
+  legendary: 'text-warning',
 };
 
-const rarityIcons = {
+const RARITY_BADGE: Record<Achievement['rarity'], 'secondary' | 'default' | 'warning'> = {
+  common: 'secondary',
+  rare: 'default',
+  epic: 'default',
+  legendary: 'warning',
+};
+
+const RARITY_ICON: Record<Achievement['rarity'], typeof Star> = {
   common: Star,
   rare: Award,
   epic: Trophy,
-  legendary: Crown
+  legendary: Crown,
 };
+
+function isUnlocked(achievement: Achievement) {
+  return Boolean(achievement.unlockedAt);
+}
+
+function formatUnlockedAt(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString();
+}
 
 interface AchievementShowcaseProps {
   showUnlockedOnly?: boolean;
@@ -29,24 +48,20 @@ interface AchievementShowcaseProps {
 export const AchievementShowcase: React.FC<AchievementShowcaseProps> = ({
   showUnlockedOnly = false,
   maxItems,
-  className
+  className,
 }) => {
   const { stats } = useGamification();
+  const reduced = usePrefersReducedMotion();
 
-  const filteredAchievements = showUnlockedOnly
-    ? stats.achievements.filter(a => a.unlocked)
-    : stats.achievements;
+  const filtered = showUnlockedOnly ? stats.achievements.filter(isUnlocked) : stats.achievements;
+  const displayed = maxItems ? filtered.slice(0, maxItems) : filtered;
 
-  const displayedAchievements = maxItems
-    ? filteredAchievements.slice(0, maxItems)
-    : filteredAchievements;
-
-  if (displayedAchievements.length === 0) {
+  if (displayed.length === 0) {
     return (
       <Card className={className}>
-        <CardContent className="text-center py-8">
-          <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-          <p className="text-gray-500 dark:text-gray-400">
+        <CardContent className="py-8 text-center">
+          <Trophy className="mx-auto mb-3 size-10 text-muted-foreground" aria-hidden />
+          <p className="text-sm text-muted-foreground">
             {showUnlockedOnly ? 'No achievements unlocked yet' : 'Loading achievements...'}
           </p>
         </CardContent>
@@ -55,115 +70,74 @@ export const AchievementShowcase: React.FC<AchievementShowcaseProps> = ({
   }
 
   return (
-    <div className={cn('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4', className)}>
-      <AnimatePresence>
-        {displayedAchievements.map((achievement, index) => {
-          const config = rarityConfig[achievement.rarity];
-          const IconComponent = rarityIcons[achievement.rarity];
+    <div className={cn('grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3', className)}>
+      {displayed.map((achievement, index) => {
+        const unlocked = isUnlocked(achievement);
+        const accent = RARITY_ACCENT[achievement.rarity];
+        const RarityIcon = RARITY_ICON[achievement.rarity];
+        const unlockedOn = unlocked ? formatUnlockedAt(achievement.unlockedAt) : null;
 
-          return (
-            <motion.div
-              key={achievement.id}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ delay: index * 0.1 }}
+        return (
+          <motion.div
+            key={achievement.achievementId ?? achievement.id}
+            initial={reduced ? false : { scale: 0.94 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: Math.min(index, 6) * 0.05, duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <Card
+              className={cn(
+                'relative h-full transition-colors',
+                unlocked ? 'border-primary/30 bg-card' : 'bg-muted/30 opacity-70'
+              )}
             >
-              <Card className={cn(
-                'relative overflow-hidden transition-all duration-300',
-                achievement.unlocked
-                  ? `${config.bgColor} ${config.borderColor} shadow-lg`
-                  : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60'
-              )}>
-                {achievement.unlocked && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute top-2 right-2"
-                  >
-                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs">✓</span>
-                    </div>
-                  </motion.div>
-                )}
+              {unlocked && (
+                <span className="absolute top-2 right-2 grid size-6 place-items-center rounded-full bg-success text-success-foreground">
+                  <Check className="size-3.5" aria-hidden />
+                </span>
+              )}
 
-                <CardContent className="p-4">
-                  <div className="flex items-start space-x-3">
-                    <div className={cn(
-                      'text-2xl',
-                      achievement.unlocked ? config.color : 'text-gray-400'
-                    )}>
-                      {achievement.icon}
-                    </div>
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className={cn('text-2xl leading-none', unlocked ? accent : 'text-muted-foreground')}>
+                    {achievement.icon}
+                  </div>
 
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <h4 className={cn(
-                          'font-semibold text-sm',
-                          achievement.unlocked ? 'text-gray-900 dark:text-white' : 'text-gray-500'
-                        )}>
-                          {achievement.title}
-                        </h4>
-                        <IconComponent className={cn('w-4 h-4', config.color)} />
-                      </div>
-
-                      <p className={cn(
-                        'text-xs mb-2',
-                        achievement.unlocked ? 'text-gray-600 dark:text-gray-400' : 'text-gray-400'
-                      )}>
-                        {achievement.description}
-                      </p>
-
-                      <Badge
-                        variant="secondary"
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex items-center gap-2">
+                      <h4
                         className={cn(
-                          'text-xs capitalize',
-                          config.color,
-                          config.bgColor
+                          'truncate text-sm font-semibold',
+                          unlocked ? 'text-foreground' : 'text-muted-foreground'
                         )}
                       >
-                        {achievement.rarity}
-                      </Badge>
-
-                      {achievement.unlocked && achievement.unlockedAt && (
-                        <p className="text-xs text-gray-500 mt-2">
-                          Unlocked {achievement.unlockedAt.toLocaleDateString()}
-                        </p>
-                      )}
+                        {achievement.title}
+                      </h4>
+                      <RarityIcon
+                        className={cn('size-4 shrink-0', unlocked ? accent : 'text-muted-foreground')}
+                        aria-hidden
+                      />
                     </div>
-                  </div>
-                </CardContent>
 
-                {/* Glow effect for unlocked achievements */}
-                {achievement.unlocked && (
-                  <motion.div
-                    className={cn(
-                      'absolute inset-0 opacity-10 pointer-events-none',
-                      config.bgColor
+                    <p className="mb-2 text-xs text-muted-foreground">{achievement.description}</p>
+
+                    <Badge variant={RARITY_BADGE[achievement.rarity]} className="capitalize">
+                      {achievement.rarity}
+                    </Badge>
+
+                    {unlockedOn && (
+                      <p className="mt-2 text-xs text-muted-foreground">Unlocked {unlockedOn}</p>
                     )}
-                    animate={{
-                      boxShadow: [
-                        `0 0 0 0 ${config.color.replace('text-', '')}20`,
-                        `0 0 0 10px ${config.color.replace('text-', '')}00`
-                      ]
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      repeatDelay: 3
-                    }}
-                  />
-                )}
-              </Card>
-            </motion.div>
-          );
-        })}
-      </AnimatePresence>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      })}
     </div>
   );
 };
 
-// XP and Level Display Component
 export const XPLevelDisplay: React.FC<{ className?: string }> = ({ className }) => {
   const { stats } = useGamification();
 
@@ -171,34 +145,29 @@ export const XPLevelDisplay: React.FC<{ className?: string }> = ({ className }) 
   const xpForNextLevel = stats.level * 100;
   const currentLevelXP = stats.xp - xpForCurrentLevel;
   const xpNeededForNextLevel = xpForNextLevel - xpForCurrentLevel;
-  const progressPercent = (currentLevelXP / xpNeededForNextLevel) * 100;
+  const progressPercent = Math.min(100, Math.max(0, (currentLevelXP / xpNeededForNextLevel) * 100));
 
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Star className="w-5 h-5 text-yellow-500" />
+        <CardTitle className="flex items-center gap-2">
+          <Star className="size-5 text-warning" aria-hidden />
           <span>Level {stats.level}</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
           <div className="flex justify-between text-sm">
-            <span>XP: {stats.xp}</span>
-            <span>{xpForNextLevel} XP to next level</span>
+            <span className="text-foreground">XP: {stats.xp}</span>
+            <span className="text-muted-foreground">{xpForNextLevel} XP to next level</span>
           </div>
 
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-            <motion.div
-              className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${Math.min(progressPercent, 100)}%` }}
-              transition={{ duration: 1, ease: 'easeOut' }}
-            />
-          </div>
+          <Progress value={progressPercent} />
 
-          <div className="flex justify-between text-xs text-gray-500">
-            <span>{currentLevelXP} / {xpNeededForNextLevel} XP</span>
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>
+              {currentLevelXP} / {xpNeededForNextLevel} XP
+            </span>
             <span>{Math.max(0, xpNeededForNextLevel - currentLevelXP)} remaining</span>
           </div>
         </div>

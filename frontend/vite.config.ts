@@ -67,7 +67,8 @@ export default defineConfig({
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
           ui: ['framer-motion', 'lucide-react'],
-          editor: ['@monaco-editor/react']
+          editor: ['@monaco-editor/react'],
+          mermaid: ['mermaid'],
         }
       }
     }

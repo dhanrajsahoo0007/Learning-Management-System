@@ -1,19 +1,28 @@
-import React from 'react';
+import type { FC } from 'react';
+import { MermaidDiagram, looksLikeMermaid } from './MermaidDiagram';
 
-export const DiagramBlock: React.FC<{ diagram?: string; title?: string }> = ({
+export const DiagramBlock: FC<{ diagram?: string; title?: string }> = ({
   diagram,
   title = 'Architecture',
 }) => {
   if (!diagram) return null;
 
+  const mermaid = looksLikeMermaid(diagram);
+
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 overflow-hidden">
-      <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="border-b border-border px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         {title} diagram
       </div>
-      <pre className="p-4 text-sm leading-relaxed text-slate-800 dark:text-slate-200 overflow-x-auto font-mono whitespace-pre">
-        {diagram}
-      </pre>
+      <div className="p-4">
+        {mermaid ? (
+          <MermaidDiagram source={diagram} />
+        ) : (
+          <pre className="overflow-x-auto whitespace-pre font-mono text-sm leading-relaxed text-foreground">
+            {diagram}
+          </pre>
+        )}
+      </div>
     </div>
   );
 };

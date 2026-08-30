@@ -1,86 +1,86 @@
 /**
- * TypeScript interfaces for DSA problems
- * Generated from Python Pydantic models
+ * Types for individual DSA problems.
+ *
+ * These mirror the payloads served by the DSA service, which are generated
+ * from the Python files under backend/services/dsa/content by extract.py.
  */
 
-export interface Example {
+/** A problem is pending when its source file exists but has no solution yet. */
+export type ProblemStatus = 'solved' | 'pending';
+
+export interface ProblemExample {
   input: string;
   output: string;
-  explanation?: string | null;
+  explanation?: string;
 }
 
-export interface TestCase {
-  input: string;
-  expected_output: string;
-  hidden: boolean;
+export interface ProblemComplexity {
+  time?: string;
+  space?: string;
 }
 
-export interface ComplexityAnalysis {
-  time?: string | null;
-  space?: string | null;
-  explanation?: string | null;
-}
-
-export interface Solution {
+/** One implementation. A file often holds several named variants. */
+export interface ProblemSolution {
   language: string;
   code: string;
-  name?: string | null;
-  complexity?: ComplexityAnalysis | null;
+  name?: string;
+  complexity?: ProblemComplexity;
 }
 
-export interface Problem {
+export interface DSAProblem {
   id: string;
+  topicId: string;
   title: string;
+  /** Folder titles between the topic and the file, outermost first. */
+  sectionPath: string[];
   statement: string;
-  examples: Example[];
-  test_cases: TestCase[];
-  constraints?: string | null;
-  solutions: Solution[];
-  difficulty?: string | null;
-  topics: string[];
-  source_file?: string | null;
+  constraints?: string;
+  /** Trailing write-up the author left below the code. */
+  notes?: string;
+  examples: ProblemExample[];
+  solutions: ProblemSolution[];
+  difficulty?: string;
+  status: ProblemStatus;
+  sourceFile: string;
+  sortKey: string;
 }
 
-export interface DSACollection {
-  problems: Problem[];
-  metadata?: Record<string, string>;
+/** List payload; omits statements and solution bodies to keep responses small. */
+export interface DSAProblemSummary {
+  id: string;
+  topicId: string;
+  title: string;
+  sectionPath: string[];
+  difficulty?: string;
+  status: ProblemStatus;
+  sortKey: string;
+  hasSolution: boolean;
+  hasStatement: boolean;
+  solutionCount: number;
 }
 
-/**
- * Load DSA problems from JSON file
- */
-export async function loadProblems(jsonPath: string): Promise<DSACollection> {
-  const response = await fetch(jsonPath);
-  return response.json();
+/** A problem is worth opening when there is something to read or run. */
+export function isProblemOpenable(problem: DSAProblemSummary): boolean {
+  return problem.hasSolution || problem.hasStatement;
 }
 
-/**
- * Get problem by ID
- */
-export function getProblemById(
-  collection: DSACollection,
-  id: string
-): Problem | undefined {
-  return collection.problems.find((p) => p.id === id);
-}
+/** Groups problems into their sections while preserving curriculum order. */
+export function groupBySection(
+  problems: DSAProblemSummary[]
+): Array<{ section: string; problems: DSAProblemSummary[] }> {
+  const groups: Array<{ section: string; problems: DSAProblemSummary[] }> = [];
+  const index = new Map<string, number>();
 
-/**
- * Get problems by topic
- */
-export function getProblemsByTopic(
-  collection: DSACollection,
-  topic: string
-): Problem[] {
-  return collection.problems.filter((p) => p.topics.includes(topic));
-}
+  for (const problem of problems) {
+    const section = problem.sectionPath.join(' / ') || 'Overview';
+    const existing = index.get(section);
+    if (existing === undefined) {
+      index.set(section, groups.length);
+      groups.push({ section, problems: [problem] });
+    } else {
+      groups[existing].problems.push(problem);
+    }
+  }
 
-/**
- * Get all unique topics
- */
-export function getAllTopics(collection: DSACollection): string[] {
-  const topics = new Set<string>();
-  collection.problems.forEach((p) => {
-    p.topics.forEach((t) => topics.add(t));
-  });
-  return Array.from(topics).sort();
+  return groups;
 }

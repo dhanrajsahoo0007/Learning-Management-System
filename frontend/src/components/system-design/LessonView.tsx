@@ -1,11 +1,19 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArchitectureTopic } from '@/data/systemDesignTypes';
+import { ArchitectureTopic, LessonDiagram } from '@/data/systemDesignTypes';
 import { findTopicById, getTopicPath } from '@/data/curriculum';
 import { DiagramBlock } from './DiagramBlock';
+import { ExcalidrawPoster } from './ExcalidrawPoster';
+import { ApiSpecCard } from './ApiSpecCard';
+import { ComparisonTable } from './ComparisonTable';
+import { DataModelCard } from './DataModelCard';
+import { FollowUpAccordion } from './FollowUpAccordion';
+import { AnimatedWalkthrough } from './AnimatedWalkthrough';
+import { LessonAnimation } from './animations';
+import { ProductMark, hasProductMark } from './marks/ProductMark';
+import { POSTERS } from './posters';
 import { LessonShell } from './LessonShell';
 
 const Section: React.FC<{ title: string; children: React.ReactNode; hide?: boolean }> = ({
@@ -38,6 +46,47 @@ const BulletList: React.FC<{ items?: string[] }> = ({ items }) => {
   );
 };
 
+function ScopeList({ title, items }: { title: string; items?: string[] }) {
+  if (!items?.length) return null;
+  return (
+    <div>
+      <p className="mb-2 text-sm font-medium text-foreground">{title}</p>
+      <BulletList items={items} />
+    </div>
+  );
+}
+
+function DiagramGallery({ diagrams }: { diagrams?: LessonDiagram[] }) {
+  if (!diagrams?.length) return null;
+  return (
+    <div className="space-y-4">
+      {diagrams.map((diagram) => {
+        if (diagram.kind === 'excalidraw') {
+          const Poster = POSTERS[diagram.src];
+          if (!Poster) return null;
+          return (
+            <ExcalidrawPoster key={diagram.id} title={diagram.title}>
+              <Poster />
+            </ExcalidrawPoster>
+          );
+        }
+        if (diagram.kind === 'mermaid') {
+          return <DiagramBlock key={diagram.id} diagram={diagram.src} title={diagram.title} />;
+        }
+        if (diagram.kind === 'animation') {
+          return (
+            <div key={diagram.id} className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{diagram.title}</p>
+              <LessonAnimation id={diagram.src} />
+            </div>
+          );
+        }
+        return null;
+      })}
+    </div>
+  );
+}
+
 export const LessonView: React.FC<{ topic: ArchitectureTopic }> = ({ topic }) => {
   const navigate = useNavigate();
   const content = topic.content;
@@ -45,23 +94,37 @@ export const LessonView: React.FC<{ topic: ArchitectureTopic }> = ({ topic }) =>
   const related = (content.relatedTopics || [])
     .map((id) => findTopicById(id))
     .filter((item): item is ArchitectureTopic => Boolean(item));
+  const posters = content.diagrams?.filter((diagram) => diagram.kind === 'excalidraw') ?? [];
+  const extraDiagrams = content.diagrams?.filter((diagram) => diagram.kind !== 'excalidraw') ?? [];
 
   return (
     <LessonShell topic={topic}>
       <div className="space-y-6">
-        <Section title="Why it exists">
+        <Section title="Problem statement" hide={!content.problemStatement}>
+          <p className="leading-relaxed text-foreground">{content.problemStatement?.prompt}</p>
+          <div className="mt-4 grid gap-6 md:grid-cols-2">
+            <ScopeList title="In scope" items={content.problemStatement?.inScope} />
+            <ScopeList title="Out of scope for v1" items={content.problemStatement?.outOfScope} />
+          </div>
+        </Section>
+
+        <Section title="Why it exists" hide={Boolean(content.problemStatement)}>
           <p className="leading-relaxed text-foreground">{content.whyItExists || content.overview}</p>
         </Section>
 
-        <Section title="Overview" hide={!content.overview}>
+        <Section title="Overview" hide={!content.overview || Boolean(content.problemStatement)}>
           <p className="leading-relaxed text-foreground">{content.overview}</p>
+        </Section>
+
+        <Section title="Assumptions" hide={!content.assumptions?.length}>
+          <BulletList items={content.assumptions} />
         </Section>
 
         <Section title="When to use it" hide={!content.whenToUse?.length}>
           <BulletList items={content.whenToUse} />
         </Section>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid gap-6 md:grid-cols-2">
           <Section title="Functional requirements" hide={!content.functionalRequirements?.length}>
             <ul className="space-y-3">
               {content.functionalRequirements.map((item) => (
@@ -117,31 +180,32 @@ export const LessonView: React.FC<{ topic: ArchitectureTopic }> = ({ topic }) =>
           </div>
         </Section>
 
-        <Section title="Request path / walkthrough" hide={!walkthrough?.length}>
-          <div className="space-y-5">
-            {walkthrough.map((step, index) => (
-              <motion.div key={step.title} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex gap-4">
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                  {index + 1}
-                </div>
-                <div>
-                  <h4 className="font-semibold text-foreground mb-1">{step.title}</h4>
-                  <p className="text-muted-foreground">{step.description}</p>
-                </div>
-              </motion.div>
+        <Section title="Types at a glance" hide={!content.comparisons?.length}>
+          <div className="space-y-6">
+            {content.comparisons?.map((table) => (
+              <ComparisonTable key={table.title} table={table} />
             ))}
           </div>
+        </Section>
+
+        <Section title="High-level architecture" hide={!content.architecture && !content.diagram && !posters.length}>
+          {content.architecture && (
+            <p className="mb-4 leading-relaxed text-foreground">{content.architecture}</p>
+          )}
+          <div className="space-y-4">
+            <DiagramGallery diagrams={posters} />
+            <DiagramBlock diagram={content.diagram} />
+          </div>
+        </Section>
+
+        <Section title="Request path / walkthrough" hide={!walkthrough?.length}>
+          <AnimatedWalkthrough steps={walkthrough} />
         </Section>
 
         <Section title="APIs" hide={!content.apis?.length}>
           <div className="space-y-3">
             {content.apis.map((api) => (
-              <div key={`${api.method}-${api.path}`} className="rounded-lg bg-muted/50 p-3">
-                <p className="font-mono text-sm">
-                  <span className="font-bold text-primary">{api.method}</span> {api.path}
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">{api.description}</p>
-              </div>
+              <ApiSpecCard key={`${api.method}-${api.path}`} api={api} />
             ))}
           </div>
         </Section>
@@ -149,34 +213,29 @@ export const LessonView: React.FC<{ topic: ArchitectureTopic }> = ({ topic }) =>
         <Section title="Data model" hide={!content.dataModel?.length}>
           <div className="space-y-4">
             {content.dataModel.map((table) => (
-              <div key={table.name} className="rounded-lg border p-4">
-                <p className="mb-2 font-mono font-semibold">{table.name}</p>
-                <p className="text-sm text-muted-foreground">{table.columns.join(' · ')}</p>
-                {table.notes && <p className="mt-2 text-xs text-muted-foreground">{table.notes}</p>}
-              </div>
+              <DataModelCard key={table.name} table={table} />
             ))}
           </div>
         </Section>
 
-        <Section title="Architecture" hide={!content.architecture && !content.diagram}>
-          {content.architecture && (
-            <p className="text-foreground leading-relaxed mb-4">{content.architecture}</p>
-          )}
-          <DiagramBlock diagram={content.diagram} />
+        <Section title="More diagrams" hide={!extraDiagrams.length}>
+          <DiagramGallery diagrams={extraDiagrams} />
         </Section>
 
         <Section title="Deep dives" hide={!content.deepDives?.length}>
-          <div className="space-y-5">
+          <div className="space-y-6">
             {content.deepDives.map((dive) => (
-              <div key={dive.title}>
-                <h4 className="font-semibold text-foreground mb-2">{dive.title}</h4>
-                <p className="text-foreground leading-relaxed">{dive.body}</p>
+              <div key={dive.title} className="space-y-3">
+                <h4 className="font-semibold text-foreground">{dive.title}</h4>
+                <p className="leading-relaxed text-foreground">{dive.body}</p>
+                <LessonAnimation id={dive.animation} />
+                {dive.diagram && <DiagramBlock diagram={dive.diagram} title={dive.title} />}
               </div>
             ))}
           </div>
         </Section>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid gap-6 md:grid-cols-2">
           <Section title="Trade-offs" hide={!content.tradeoffs?.length}>
             <BulletList items={content.tradeoffs} />
           </Section>
@@ -186,7 +245,7 @@ export const LessonView: React.FC<{ topic: ArchitectureTopic }> = ({ topic }) =>
         </div>
 
         <Section title="Scaling roadmap" hide={!content.scalingPath?.length}>
-          <div className="grid md:grid-cols-3 gap-3">
+          <div className="grid gap-3 md:grid-cols-3">
             {content.scalingPath.map((stage) => (
               <div key={stage.scale} className="rounded-lg bg-muted/50 p-4">
                 <p className="mb-1 text-xs tracking-wide text-muted-foreground uppercase">{stage.scale}</p>
@@ -197,15 +256,21 @@ export const LessonView: React.FC<{ topic: ArchitectureTopic }> = ({ topic }) =>
         </Section>
 
         <Section title="Interview script" hide={!content.interviewScript?.length}>
-          <ol className="space-y-3 list-decimal list-inside">
+          <ol className="list-inside list-decimal space-y-3">
             {content.interviewScript.map((line) => (
-              <li key={line} className="text-foreground italic">{line}</li>
+              <li key={line} className="italic text-foreground">
+                {line}
+              </li>
             ))}
           </ol>
         </Section>
 
         <Section title="Common mistakes" hide={!content.commonMistakes?.length}>
           <BulletList items={content.commonMistakes} />
+        </Section>
+
+        <Section title="Advanced follow-ups" hide={!content.followUps?.length}>
+          <FollowUpAccordion items={content.followUps ?? []} />
         </Section>
 
         <Section title="Real-world examples" hide={!content.examples?.length}>
@@ -227,14 +292,23 @@ export const LessonView: React.FC<{ topic: ArchitectureTopic }> = ({ topic }) =>
           <Section title="Related lessons">
             <div className="flex flex-wrap gap-2">
               {related.map((item) => (
-                <Button key={item.id} type="button" variant="outline" size="sm" onClick={() => navigate(getTopicPath(item))}>
+                <Button
+                  key={item.id}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(getTopicPath(item))}
+                  className="gap-1.5 transition-transform duration-150 active:scale-[0.97]"
+                >
+                  {item.section === 'products' && hasProductMark(item.id) && (
+                    <ProductMark id={item.id} size="sm" className="text-primary" />
+                  )}
                   {item.title}
                 </Button>
               ))}
             </div>
           </Section>
         )}
-
       </div>
     </LessonShell>
   );

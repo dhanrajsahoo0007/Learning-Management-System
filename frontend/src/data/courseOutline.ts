@@ -1,5 +1,5 @@
 import { isFeatureEnabled, type FeatureKey } from '@/config/features';
-import { getAIFundamentals, getAIProducts, findAITopic } from './aiSystemDesignData';
+import { getAIProducts, findAITopic } from './aiSystemDesignData';
 import { getClassicTopics, findClassicTopic } from './systemDesignData';
 import {
   aimlInterviewTopics,
@@ -90,29 +90,94 @@ const CLASSIC_FUNDAMENTAL_SECTIONS: SectionDef[] = [
     id: 'getting-started',
     title: 'Getting started',
     icon: 'Compass',
-    ids: ['interview-approach'],
+    ids: ['interview-approach', 'dns', 'http-rpc'],
+    groups: [
+      { title: 'Start here', ids: ['interview-approach'] },
+      { title: 'The network', ids: ['dns', 'http-rpc'] },
+    ],
+    newIds: ['interview-approach', 'dns', 'http-rpc'],
   },
   {
     id: 'building-blocks',
     title: 'Building blocks',
     icon: 'Layers',
-    ids: ['databases', 'caching', 'load-balancer', 'cdn', 'api-gateway', 'message-queues'],
+    ids: [
+      'databases',
+      'replication',
+      'sharding',
+      'transactions',
+      'storage-media',
+      'caching',
+      'cdn',
+      'load-balancer',
+      'api-gateway',
+      'rate-limiting',
+      'message-queues',
+      'batch-stream',
+    ],
     groups: [
-      { title: 'Data', ids: ['databases'] },
+      { title: 'Data', ids: ['databases', 'replication', 'sharding', 'transactions'] },
+      { title: 'Storage', ids: ['storage-media'] },
       { title: 'Speed', ids: ['caching', 'cdn'] },
-      { title: 'Traffic', ids: ['load-balancer', 'api-gateway'] },
-      { title: 'Async work', ids: ['message-queues'] },
+      { title: 'Traffic', ids: ['load-balancer', 'api-gateway', 'rate-limiting'] },
+      { title: 'Async work', ids: ['message-queues', 'batch-stream'] },
+    ],
+    newIds: [
+      'databases',
+      'replication',
+      'sharding',
+      'transactions',
+      'storage-media',
+      'caching',
+      'cdn',
+      'load-balancer',
+      'api-gateway',
+      'rate-limiting',
+      'message-queues',
+      'batch-stream',
     ],
   },
   {
     id: 'scale-toolkit',
     title: 'Scale toolkit',
     icon: 'Gauge',
-    ids: ['unique-ids', 'search-feeds', 'realtime', 'reliability', 'storage-media'],
+    ids: [
+      'unique-ids',
+      'consistent-hashing',
+      'auth',
+      'search-feeds',
+      'realtime',
+      'geospatial',
+      'reliability',
+      'observability',
+      'distributed-locking',
+      'consensus',
+      'probabilistic',
+      'service-discovery',
+      'deployments',
+    ],
     groups: [
-      { title: 'Identity', ids: ['unique-ids'] },
+      { title: 'Identity', ids: ['unique-ids', 'consistent-hashing', 'auth'] },
       { title: 'Delivery', ids: ['search-feeds', 'realtime'] },
-      { title: 'Hardening', ids: ['reliability', 'storage-media'] },
+      { title: 'Place', ids: ['geospatial'] },
+      { title: 'Hardening', ids: ['reliability', 'observability', 'distributed-locking'] },
+      { title: 'Theory', ids: ['consensus', 'probabilistic'] },
+      { title: 'Operate', ids: ['service-discovery', 'deployments'] },
+    ],
+    newIds: [
+      'unique-ids',
+      'consistent-hashing',
+      'auth',
+      'search-feeds',
+      'realtime',
+      'geospatial',
+      'reliability',
+      'observability',
+      'distributed-locking',
+      'consensus',
+      'probabilistic',
+      'service-discovery',
+      'deployments',
     ],
   },
 ];
@@ -131,7 +196,16 @@ const CLASSIC_PROBLEM_SECTIONS: SectionDef[] = [
       'skyscanner',
       'uber',
       'whatsapp',
+      'slack',
+      'zoom',
       'youtube',
+      'netflix',
+      'spotify',
+      'gmail',
+      'google-search',
+      'paytm',
+      'zomato',
+      'bookmyshow',
       'instagram',
     ],
     groups: [
@@ -139,34 +213,12 @@ const CLASSIC_PROBLEM_SECTIONS: SectionDef[] = [
       { title: 'Social graphs', ids: ['news-feed', 'linkedin', 'instagram'] },
       { title: 'Marketplaces', ids: ['tinder', 'airbnb'] },
       { title: 'Mobility', ids: ['skyscanner', 'uber'] },
-      { title: 'Realtime media', ids: ['whatsapp', 'youtube'] },
+      { title: 'Realtime comms', ids: ['whatsapp', 'slack', 'zoom'] },
+      { title: 'Media', ids: ['youtube', 'netflix', 'spotify'] },
+      { title: 'Search and mail', ids: ['google-search', 'gmail'] },
+      { title: 'Local commerce', ids: ['paytm', 'zomato', 'bookmyshow'] },
     ],
-    newIds: ['skyscanner'],
-  },
-];
-
-const AI_FUNDAMENTAL_SECTIONS: SectionDef[] = [
-  {
-    id: 'ai-building-blocks',
-    title: 'AI building blocks',
-    icon: 'Cpu',
-    ids: [
-      'llm-serving',
-      'prompting',
-      'embeddings',
-      'rag',
-      'fine-tune-vs-rag',
-      'inference-infra',
-      'ai-caching',
-      'eval-quality',
-      'ai-safety',
-      'ai-cost',
-    ],
-    groups: [
-      { title: 'Serving', ids: ['llm-serving', 'prompting', 'inference-infra'] },
-      { title: 'Retrieval', ids: ['embeddings', 'rag', 'fine-tune-vs-rag'] },
-      { title: 'Operations', ids: ['ai-caching', 'eval-quality', 'ai-safety', 'ai-cost'] },
-    ],
+    newIds: ['tinder', 'slack', 'zoom', 'netflix', 'spotify', 'gmail', 'google-search', 'paytm', 'zomato', 'bookmyshow'],
   },
 ];
 
@@ -221,13 +273,13 @@ const COURSE_CATALOG: Course[] = [
     featureKey: 'systemDesign',
   },
   {
-    id: 'ai-fundamentals',
+    id: 'aiml-ml-system-design',
     family: 'ai',
     kind: 'fundamentals',
     title: 'Fundamentals',
     familyTitle: 'AI System Design',
-    blurb: 'Serving, RAG, eval, and cost — the building blocks of AI systems.',
-    homePath: '/system-design/ai/fundamentals',
+    blurb: 'Production patterns for data, serving, evaluation, safety, and LLM operations.',
+    homePath: '/system-design/ai/ml-system-design',
     featureKey: 'aiSystemDesign',
   },
   {
@@ -259,16 +311,6 @@ const COURSE_CATALOG: Course[] = [
     blurb: 'Classical ML algorithms — regression, classification, clustering, trees, and ensembles.',
     homePath: '/ai-ml/learning-paths/machine-learning',
     featureKey: 'aiMl',
-  },
-  {
-    id: 'aiml-ml-system-design',
-    family: 'ai',
-    kind: 'mlsd',
-    title: 'ML System Design',
-    familyTitle: 'AI System Design',
-    blurb: 'Production patterns for data, serving, evaluation, safety, and LLM operations.',
-    homePath: '/system-design/ai/ml-system-design',
-    featureKey: 'aiSystemDesign',
   },
   {
     id: 'aiml-interviews',
@@ -307,7 +349,8 @@ function findTopic(id: string): ArchitectureTopic | undefined {
 }
 
 export function getCourseById(id: CourseId): Course {
-  const course = COURSE_CATALOG.find((item) => item.id === id);
+  const resolved = id === 'ai-fundamentals' ? 'aiml-ml-system-design' : id;
+  const course = COURSE_CATALOG.find((item) => item.id === resolved);
   if (!course) {
     throw new Error(`Unknown course: ${id}`);
   }
@@ -338,6 +381,9 @@ export function getCourseForTopic(topic: ArchitectureTopic): Course {
     if (topic.id.startsWith('aiml-path-')) return getCourseById('aiml-paths');
     return getCourseById('aiml-machine-learning');
   }
+  if (topic.track === 'ai' && topic.section === 'fundamentals') {
+    return getCourseById('aiml-ml-system-design');
+  }
   const sectionToKind: Record<TopicSection, CourseKind> = {
     fundamentals: 'fundamentals',
     products: 'problems',
@@ -363,9 +409,8 @@ export function getSiblingCourse(course: Course): Course | undefined {
   }
   if (course.family === 'ai') {
     const next: Partial<Record<CourseId, CourseId>> = {
-      'ai-fundamentals': 'aiml-ml-system-design',
       'aiml-ml-system-design': 'ai-problems',
-      'ai-problems': 'ai-fundamentals',
+      'ai-problems': 'aiml-ml-system-design',
     };
     const siblingId = next[course.id];
     if (!siblingId) return undefined;
@@ -404,7 +449,7 @@ export function getOutlineForCourse(courseId: CourseId): CourseOutlineSection[] 
     case 'classic-problems':
       return materialize(CLASSIC_PROBLEM_SECTIONS, getClassicTopics());
     case 'ai-fundamentals':
-      return materialize(AI_FUNDAMENTAL_SECTIONS, getAIFundamentals());
+      return materialize(asSectionDefs(aimlOutlineDefs.mlSystemDesign), aimlSystemDesignTopics);
     case 'ai-problems':
       return materialize(AI_PROBLEM_SECTIONS, getAIProducts());
     case 'aiml-paths':
@@ -485,7 +530,7 @@ export function parseCoursePath(pathname: string): CoursePath {
   if (parts[1] === 'ai') {
     const rest = parts[2];
     if (!rest || rest === 'fundamentals') {
-      return { course: getCourseById('ai-fundamentals') };
+      return { course: getCourseById('aiml-ml-system-design') };
     }
     if (rest === 'problems') {
       return { course: getCourseById('ai-problems') };
@@ -498,7 +543,7 @@ export function parseCoursePath(pathname: string): CoursePath {
     }
     const topic = findTopic(rest);
     return {
-      course: topic ? getCourseForTopic(topic) : getCourseById('ai-fundamentals'),
+      course: topic ? getCourseForTopic(topic) : getCourseById('aiml-ml-system-design'),
       topicId: rest,
     };
   }

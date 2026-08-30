@@ -1,309 +1,399 @@
 """
-DSA Problem Parser
+Parses a single DSA problem file into a `Problem`.
 
-This module extracts DSA problems from Python files and converts them
-into a code-agnostic JSON structure.
+The corpus is not uniformly formatted: only 43% of files carry a docstring,
+headers vary ("Problem Statement:", "Problem:", and a "Problem Staement" typo),
+and solutions appear in three shapes -- a `class Solution`, a set of bare
+top-level functions, or a plain class such as `LRUCache`. This parser handles
+all of them and treats an empty file as a pending curriculum entry rather than
+an error.
 """
 
 import ast
 import re
+import textwrap
 from pathlib import Path
-from typing import List, Optional, Tuple
-from dsa_schema import Problem, Example, TestCase, Solution, ComplexityAnalysis
+from typing import List, Optional
+
+from dsa_schema import (
+    STATUS_PENDING,
+    STATUS_SOLVED,
+    ComplexityAnalysis,
+    Example,
+    Problem,
+    Solution,
+)
+from topics_meta import FOLDER_TO_TOPIC
+
+# "01. Two Sum" -> order 1. Requires the dot so a title like "2 Sum" is intact.
+ORDER_PREFIX = re.compile(r"^\s*(\d+)\s*\.\s*")
+
+STATEMENT_HEADER = re.compile(
+    r"^\s*Problem\s*(?:Statement|Staement|Statment)?\s*[:\-]?\s*", re.I
+)
+EXAMPLE_RE = re.compile(r"^\s*Example\s*\d*\s*[:\-]", re.I)
+CONSTRAINTS_RE = re.compile(r"^\s*Constraints?\s*[:\-]", re.I)
+SECTION_BREAK = re.compile(r"^\s*(Note|Follow[ -]?up|Solution|Approach)\s*[:\-]", re.I)
+LABEL_RE = re.compile(
+    r"^\s*(Input|Output|Expected Output|Explanation)\s*[:\-]\s*(.*)$", re.I
+)
+DIFFICULTY_RE = re.compile(r"Difficulty\s*[:\-]\s*(Easy|Medium|Hard)\b", re.I)
+
+TIME_RE = re.compile(r"Time\s*Complexity[^\n]*?(O\s*\([^)\n]*\)[^,\n]*)", re.I)
+SPACE_RE = re.compile(r"Space\s*Complexity[^\n]*?(O\s*\([^)\n]*\)[^,\n]*)", re.I)
+TIME_SHORT_RE = re.compile(r"\bTime\s*[:=]\s*(O\s*\([^)\n]*\))", re.I)
+SPACE_SHORT_RE = re.compile(r"\bSpace\s*[:=]\s*(O\s*\([^)\n]*\))", re.I)
+
+# Files that belong to the extraction toolchain rather than the curriculum.
+TOOLING_FILES = {
+    "dsa_parser.py",
+    "dsa_schema.py",
+    "topics_meta.py",
+    "extract.py",
+    "batch_extract.py",
+    "extract_all.py",
+    "test_dsa_parser.py",
+}
 
 
-class DSAParser:
-    """Parser for extracting DSA problems from Python files."""
+def strip_order_prefix(name: str) -> str:
+    return ORDER_PREFIX.sub("", name).strip()
 
-    def __init__(self, filepath: str):
-        self.filepath = Path(filepath)
-        self.content = self.filepath.read_text(encoding='utf-8')
-        self.tree = ast.parse(self.content)
-        
+
+def order_number(name: str) -> Optional[int]:
+    match = ORDER_PREFIX.match(name)
+    return int(match.group(1)) if match else None
+
+
+def slugify(text: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", strip_order_prefix(text).lower()).strip("-")
+    return slug or "item"
+
+
+def segment_sort_key(name: str) -> str:
+    """Sortable segment: numeric prefix first, then the slug as a tiebreaker.
+
+    Unnumbered folders sort after numbered ones, which matches how the tree
+    reads on disk.
+    """
+    number = order_number(name)
+    return f"{number:04d}~{slugify(name)}" if number is not None else f"9999~{slugify(name)}"
+
+
+def _dedent_body(text: str) -> str:
+    """Strip the common indent from every line after the first.
+
+    Docstrings here start flush against the opening quotes and indent the rest,
+    so a plain textwrap.dedent would not find a shared prefix.
+    """
+    lines = text.splitlines()
+    if len(lines) < 2:
+        return text.strip()
+    rest = [line for line in lines[1:] if line.strip()]
+    if not rest:
+        return lines[0].strip()
+    indent = min(len(line) - len(line.lstrip()) for line in rest)
+    out = [lines[0].strip()] + [line[indent:] if len(line) > indent else line.strip() for line in lines[1:]]
+    return "\n".join(out).strip()
+
+
+def _is_driver_function(name: str) -> bool:
+    return name.startswith("_") or name.startswith("test") or name in {"main", "run"}
+
+
+def _first_match(pattern: re.Pattern, text: str) -> Optional[str]:
+    match = pattern.search(text)
+    return re.sub(r"\s+", " ", match.group(1)).strip() if match else None
+
+
+class ProblemParser:
+    def __init__(self, path: Path, root: Path):
+        self.path = path
+        self.root = root
+        self.relative = path.relative_to(root)
+        self.source = path.read_text(encoding="utf-8", errors="replace")
+        self.lines = self.source.splitlines()
+        try:
+            self.tree: Optional[ast.Module] = ast.parse(self.source)
+        except SyntaxError:
+            self.tree = None
+
+    # ---------------------------------------------------------------- identity
+
+    def _identity(self):
+        parts = list(self.relative.parts)
+        topic_folder = parts[0]
+        stem = Path(parts[-1]).stem
+        middle = parts[1:-1]
+
+        topic_id = FOLDER_TO_TOPIC.get(topic_folder.strip(), slugify(topic_folder))
+        problem_id = "/".join(
+            [slugify(topic_folder)] + [slugify(part) for part in middle] + [slugify(stem)]
+        )
+        sort_key = "/".join(
+            [segment_sort_key(part) for part in [topic_folder] + list(middle)]
+            + [segment_sort_key(stem)]
+        )
+        sections = [strip_order_prefix(part) for part in middle]
+        title = re.sub(r"\s+", " ", strip_order_prefix(stem)).strip() or stem
+        return topic_id, problem_id, sort_key, sections, title
+
+    # ------------------------------------------------------------- docstrings
+
+    def _docstring(self) -> Optional[str]:
+        return ast.get_docstring(self.tree) if self.tree else None
+
+    def _statement(self, doc: str) -> str:
+        lines = doc.splitlines()
+        cut = len(lines)
+        for index, line in enumerate(lines):
+            if EXAMPLE_RE.match(line) or CONSTRAINTS_RE.match(line):
+                cut = index
+                break
+        body = "\n".join(lines[:cut])
+        body = STATEMENT_HEADER.sub("", body, count=1)
+        return _dedent_body(body)
+
+    def _examples(self, doc: str) -> List[Example]:
+        blocks: List[List[str]] = []
+        current: Optional[List[str]] = None
+        for line in doc.splitlines():
+            if EXAMPLE_RE.match(line):
+                if current is not None:
+                    blocks.append(current)
+                current = []
+                continue
+            if current is None:
+                continue
+            if CONSTRAINTS_RE.match(line) or SECTION_BREAK.match(line):
+                blocks.append(current)
+                current = None
+                continue
+            current.append(line)
+        if current is not None:
+            blocks.append(current)
+
+        examples: List[Example] = []
+        for block in blocks:
+            fields = {"input": [], "output": [], "explanation": []}
+            active: Optional[str] = None
+            for line in block:
+                label = LABEL_RE.match(line)
+                if label:
+                    key = label.group(1).lower()
+                    active = "output" if key == "expected output" else key
+                    value = label.group(2).strip()
+                    if value:
+                        fields[active].append(value)
+                    continue
+                if active and line.strip():
+                    fields[active].append(line.strip())
+            joined = {key: " ".join(value).strip() for key, value in fields.items()}
+            if joined["input"] and joined["output"]:
+                examples.append(
+                    Example(
+                        input=joined["input"],
+                        output=joined["output"],
+                        explanation=joined["explanation"] or None,
+                    )
+                )
+        return examples
+
+    def _constraints(self, doc: str) -> Optional[str]:
+        collected: List[str] = []
+        active = False
+        for line in doc.splitlines():
+            if CONSTRAINTS_RE.match(line):
+                active = True
+                remainder = CONSTRAINTS_RE.sub("", line).strip()
+                if remainder:
+                    collected.append(remainder)
+                continue
+            if not active:
+                continue
+            if EXAMPLE_RE.match(line) or SECTION_BREAK.match(line):
+                break
+            if not line.strip():
+                if collected:
+                    break
+                continue
+            collected.append(line.strip())
+        return "\n".join(collected) or None
+
+    def _notes(self) -> Optional[str]:
+        """Trailing module-level docstrings, which authors used for write-ups."""
+        if not self.tree:
+            return None
+        chunks = []
+        for index, node in enumerate(self.tree.body):
+            if index == 0:
+                continue
+            if (
+                isinstance(node, ast.Expr)
+                and isinstance(node.value, ast.Constant)
+                and isinstance(node.value.value, str)
+            ):
+                text = _dedent_body(node.value.value)
+                if text:
+                    chunks.append(text)
+        return "\n\n".join(chunks) or None
+
+    # -------------------------------------------------------------- solutions
+
+    def _source_of(self, node: ast.AST) -> str:
+        return (ast.get_source_segment(self.source, node) or "").rstrip()
+
+    @staticmethod
+    def _join(parts: List[str]) -> str:
+        return "\n\n".join(part.strip() for part in parts if part and part.strip()).strip()
+
+    def _complexity(self, node: Optional[ast.AST]) -> Optional[ComplexityAnalysis]:
+        if node is not None and getattr(node, "end_lineno", None):
+            window = "\n".join(self.lines[node.end_lineno : node.end_lineno + 40])
+        else:
+            window = self.source
+        time = _first_match(TIME_RE, window) or _first_match(TIME_SHORT_RE, window)
+        space = _first_match(SPACE_RE, window) or _first_match(SPACE_SHORT_RE, window)
+        if not time and not space:
+            return None
+        return ComplexityAnalysis(time=time, space=space)
+
+    def _entry_functions(self, functions: List[ast.AST]) -> List[ast.AST]:
+        """Functions that no sibling calls, i.e. the ones a reader starts from."""
+        names = {fn.name for fn in functions}
+        called = set()
+        for fn in functions:
+            for node in ast.walk(fn):
+                if isinstance(node, ast.Name) and node.id in names and node.id != fn.name:
+                    called.add(node.id)
+        entries = [fn for fn in functions if fn.name not in called]
+        return entries or functions
+
+    def _solutions(self) -> List[Solution]:
+        if not self.tree:
+            # Unparseable but non-empty: keep the raw file so nothing is lost.
+            body = self.source.strip()
+            return [Solution(language="python", code=body, name="Solution")] if body else []
+
+        imports, classes, functions, constants = [], [], [], []
+        last_definition = -1
+        for index, node in enumerate(self.tree.body):
+            if isinstance(node, (ast.Import, ast.ImportFrom)):
+                imports.append(node)
+            elif isinstance(node, ast.ClassDef):
+                classes.append(node)
+                last_definition = index
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                functions.append(node)
+                last_definition = index
+        # Assignments before the last def are module constants; anything after
+        # is driver code such as `solution = Solution()`.
+        for index, node in enumerate(self.tree.body):
+            if isinstance(node, ast.Assign) and index < last_definition:
+                constants.append(node)
+
+        functions = [fn for fn in functions if not _is_driver_function(fn.name)]
+        solution_classes = [cls for cls in classes if cls.name.lower() == "solution"]
+        helper_classes = [cls for cls in classes if cls.name.lower() != "solution"]
+
+        prelude = (
+            [self._source_of(node) for node in imports]
+            + [self._source_of(node) for node in constants]
+            + [self._source_of(node) for node in helper_classes]
+        )
+
+        # A `class Solution` holding several public methods means several approaches.
+        if solution_classes:
+            cls = solution_classes[0]
+            methods = [
+                node
+                for node in cls.body
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and not node.name.startswith("_")
+            ]
+            if len(methods) > 1:
+                variants = []
+                for method in methods:
+                    wrapped = "class Solution:\n" + textwrap.indent(self._source_of(method), "    ")
+                    variants.append(
+                        Solution(
+                            language="python",
+                            code=self._join(prelude + [wrapped]),
+                            name=method.name,
+                            complexity=self._complexity(method),
+                        )
+                    )
+                return variants
+
+        # Several independent top-level functions means several approaches.
+        if not solution_classes and len(functions) > 1:
+            entries = self._entry_functions(functions)
+            if len(entries) > 1:
+                helpers = [fn for fn in functions if fn not in entries]
+                shared = prelude + [self._source_of(fn) for fn in helpers]
+                return [
+                    Solution(
+                        language="python",
+                        code=self._join(shared + [self._source_of(entry)]),
+                        name=entry.name,
+                        complexity=self._complexity(entry),
+                    )
+                    for entry in entries
+                ]
+
+        # Otherwise the whole file is one solution.
+        code = self._join(
+            prelude
+            + [self._source_of(cls) for cls in solution_classes]
+            + [self._source_of(fn) for fn in functions]
+        )
+        if not code:
+            return []
+        if solution_classes:
+            name = solution_classes[0].name
+        elif functions:
+            name = functions[0].name
+        elif helper_classes:
+            name = helper_classes[0].name
+        else:
+            name = "Solution"
+        return [
+            Solution(
+                language="python",
+                code=code,
+                name=name,
+                complexity=self._complexity(None),
+            )
+        ]
+
+    # ------------------------------------------------------------------ parse
+
     def parse(self) -> Problem:
-        """Parse the file and extract problem information."""
-        problem_id = self._generate_problem_id()
-        title = self._extract_title()
-        statement = self._extract_statement()
-        examples = self._extract_examples()
-        constraints = self._extract_constraints()
-        solutions = self._extract_solutions()
-        topics = self._infer_topics()
-        
+        topic_id, problem_id, sort_key, sections, title = self._identity()
+        doc = self._docstring()
+        solutions = self._solutions()
+
+        statement = self._statement(doc) if doc else ""
+        examples = self._examples(doc) if doc else []
+        constraints = self._constraints(doc) if doc else None
+        difficulty = _first_match(DIFFICULTY_RE, doc) if doc else None
+
         return Problem(
             id=problem_id,
+            topic_id=topic_id,
             title=title,
+            section_path=sections,
             statement=statement,
-            examples=examples,
-            test_cases=[],  # Can be enhanced to extract from test functions
             constraints=constraints,
+            notes=self._notes(),
+            examples=examples,
             solutions=solutions,
-            topics=topics,
-            source_file=str(self.filepath)
+            difficulty=difficulty.title() if difficulty else None,
+            status=STATUS_SOLVED if solutions else STATUS_PENDING,
+            source_file=str(self.relative),
+            sort_key=sort_key,
         )
-    
-    def _generate_problem_id(self) -> str:
-        """Generate a unique problem ID from filename."""
-        # Remove numbering prefix (e.g., "01. ") and file extension
-        name = self.filepath.stem
-        name = re.sub(r'^\d+\.\s*', '', name)
-        # Convert to lowercase and replace spaces with hyphens
-        problem_id = name.lower().replace(' ', '-')
-        # Remove special characters
-        problem_id = re.sub(r'[^a-z0-9-]', '', problem_id)
-        return problem_id
-    
-    def _extract_title(self) -> str:
-        """Extract problem title from filename or docstring."""
-        # Try to get from "Problem Statement:" in docstring
-        docstring = ast.get_docstring(self.tree)
-        if docstring:
-            match = re.search(r'Problem Statement:\s*(.+?)(?:\n|$)', docstring)
-            if match:
-                return match.group(1).strip()
-        
-        # Fallback to filename
-        name = self.filepath.stem
-        name = re.sub(r'^\d+\.\s*', '', name)
-        return name.title()
-    
-    def _extract_statement(self) -> str:
-        """Extract the problem statement from module docstring."""
-        docstring = ast.get_docstring(self.tree)
-        if not docstring:
-            return ""
-        
-        # Remove "Problem Statement:" prefix if present
-        statement = re.sub(r'^Problem Statement:\s*', '', docstring, flags=re.MULTILINE)
-        
-        # Remove examples section (we'll extract them separately)
-        statement = re.split(r'\n\s*Example \d+:', statement)[0]
-        
-        # Remove constraints section (we'll extract them separately)
-        statement = re.split(r'\n\s*Constraints?:', statement)[0]
-        
-        return statement.strip()
-    
-    def _extract_examples(self) -> List[Example]:
-        """Extract examples from docstring."""
-        docstring = ast.get_docstring(self.tree)
-        if not docstring:
-            return []
-        
-        examples = []
-        # Split docstring into lines for better parsing
-        lines = docstring.split('\n')
-        
-        i = 0
-        while i < len(lines):
-            line = lines[i].strip()
-            
-            # Look for "Example N:" pattern
-            if re.match(r'Example \d+:', line):
-                example_data = {'input': '', 'output': '', 'explanation': None}
-                i += 1
-                
-                # Extract Input
-                while i < len(lines):
-                    line = lines[i].strip()
-                    if line.startswith('Input:'):
-                        example_data['input'] = line.replace('Input:', '').strip()
-                        i += 1
-                        break
-                    i += 1
-                
-                # Extract Output
-                while i < len(lines):
-                    line = lines[i].strip()
-                    if line.startswith('Output:'):
-                        example_data['output'] = line.replace('Output:', '').strip()
-                        i += 1
-                        break
-                    i += 1
-                
-                # Extract Explanation (optional)
-                if i < len(lines):
-                    line = lines[i].strip()
-                    if line.startswith('Explanation:'):
-                        example_data['explanation'] = line.replace('Explanation:', '').strip()
-                        i += 1
-                
-                if example_data['input'] and example_data['output']:
-                    examples.append(Example(
-                        input=example_data['input'],
-                        output=example_data['output'],
-                        explanation=example_data['explanation']
-                    ))
-            else:
-                i += 1
-        
-        return examples
-    
-    def _extract_constraints(self) -> Optional[str]:
-        """Extract constraints from docstring."""
-        docstring = ast.get_docstring(self.tree)
-        if not docstring:
-            return None
-        
-        lines = docstring.split('\n')
-        constraints_lines = []
-        in_constraints = False
-        
-        for line in lines:
-            stripped = line.strip()
-            if re.match(r'Constraints?:', stripped):
-                in_constraints = True
-                # Get constraint text on same line if present
-                constraint_text = re.sub(r'Constraints?:\s*', '', stripped)
-                if constraint_text:
-                    constraints_lines.append(constraint_text)
-            elif in_constraints:
-                # Stop if we hit an empty line or another section
-                if not stripped or re.match(r'(Example|Note|Solution):', stripped):
-                    break
-                constraints_lines.append(stripped)
-        
-        return '\n'.join(constraints_lines).strip() if constraints_lines else None
-    
-    def _extract_solutions(self) -> List[Solution]:
-        """Extract solution functions from the file."""
-        solutions = []
-        
-        # Only get top-level functions (not nested ones)
-        for node in self.tree.body:
-            if isinstance(node, ast.FunctionDef):
-                # Skip private functions and test functions
-                if node.name.startswith('_') or node.name.startswith('test_'):
-                    continue
-                
-                # Extract function code
-                code = self._get_function_code(node)
-                
-                # Extract complexity analysis
-                complexity = self._extract_complexity_for_function(node.name)
-                
-                solutions.append(Solution(
-                    language="python",
-                    code=code,
-                    name=node.name,
-                    complexity=complexity
-                ))
-        
-        return solutions
-    
-    def _get_function_code(self, node: ast.FunctionDef) -> str:
-        """Extract the source code for a function."""
-        lines = self.content.splitlines()
-        start_line = node.lineno - 1
-        end_line = node.end_lineno if node.end_lineno else start_line + 1
-        
-        function_lines = lines[start_line:end_line]
-        return '\n'.join(function_lines)
-    
-    def _extract_complexity_for_function(self, func_name: str) -> Optional[ComplexityAnalysis]:
-        """Extract complexity analysis from comments following a function."""
-        lines = self.content.splitlines()
-        
-        # Find the function definition
-        func_pattern = rf'def {re.escape(func_name)}\('
-        func_end_line = None
-        
-        # Parse AST to find function end line
-        for node in self.tree.body:
-            if isinstance(node, ast.FunctionDef) and node.name == func_name:
-                func_end_line = node.end_lineno
-                break
-        
-        if func_end_line is None:
-            return None
-        
-        # Look for complexity comments/docstrings after the function
-        complexity_text = []
-        for i in range(func_end_line, min(func_end_line + 30, len(lines))):
-            line = lines[i]
-            
-            # Stop if we hit another function or class
-            if re.match(r'^(def |class )', line):
-                break
-            
-            # Collect docstrings and comments about complexity
-            stripped = line.strip()
-            if any(keyword in stripped.lower() for keyword in ['complexity', 'time:', 'space:']):
-                complexity_text.append(stripped)
-        
-        if not complexity_text:
-            return None
-        
-        full_text = '\n'.join(complexity_text)
-        
-        # Extract time complexity - look for O(...) notation
-        time_match = re.search(r'Time Complexity[:\s]+for[^:]*:\s*([O\(][^\n,]+)', full_text, re.IGNORECASE)
-        if not time_match:
-            time_match = re.search(r'Time Complexity[:\s]+([O\(][^\n,]+)', full_text, re.IGNORECASE)
-        time_complexity = time_match.group(1).strip() if time_match else None
-        
-        # Extract space complexity
-        space_match = re.search(r'Space Complexity[:\s]+for[^:]*:\s*([O\(][^\n,]+)', full_text, re.IGNORECASE)
-        if not space_match:
-            space_match = re.search(r'Space Complexity[:\s]+([O\(][^\n,]+)', full_text, re.IGNORECASE)
-        space_complexity = space_match.group(1).strip() if space_match else None
-        
-        if time_complexity or space_complexity:
-            return ComplexityAnalysis(
-                time=time_complexity,
-                space=space_complexity,
-                explanation=full_text.strip()
-            )
-        
-        return None
-    
-    def _infer_topics(self) -> List[str]:
-        """Infer topics from file path and content."""
-        topics = []
-        
-        # Extract from directory name
-        parent_dir = self.filepath.parent.name
-        # Remove numbering prefix
-        topic = re.sub(r'^\d+\.\s*', '', parent_dir).strip()
-        if topic and topic != 'dsa':
-            topics.append(topic)
-        
-        # Infer from imports and code patterns
-        if 'Counter' in self.content:
-            topics.append('HashMap')
-        if 'sorted' in self.content or 'sort' in self.content:
-            topics.append('Sorting')
-        if 'List[' in self.content or 'arr' in self.content:
-            topics.append('Array')
-        
-        return list(set(topics))  # Remove duplicates
 
 
-def parse_dsa_file(filepath: str) -> Problem:
-    """
-    Parse a DSA Python file and extract problem information.
-    
-    Args:
-        filepath: Path to the Python file
-        
-    Returns:
-        Problem object containing extracted information
-    """
-    parser = DSAParser(filepath)
-    return parser.parse()
-
-
-if __name__ == "__main__":
-    # Example usage
-    import sys
-    import json
-    
-    if len(sys.argv) < 2:
-        print("Usage: python dsa_parser.py <filepath>")
-        sys.exit(1)
-    
-    filepath = sys.argv[1]
-    problem = parse_dsa_file(filepath)
-    
-    # Print as JSON
-    print(json.dumps(problem.model_dump(), indent=2, ensure_ascii=False))
+def parse_problem_file(path: Path, root: Path) -> Problem:
+    return ProblemParser(path, root).parse()
