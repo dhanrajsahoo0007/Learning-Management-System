@@ -1,163 +1,101 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { isFeatureEnabled } from '@/config/features';
 
 interface MainLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
   showBottomNav?: boolean;
   showTopTabs?: boolean;
-  topTabs?: React.ReactNode;
+  topTabs?: ReactNode;
 }
 
-export const MainLayout: React.FC<MainLayoutProps> = ({
+export function MainLayout({
   children,
   showBottomNav = true,
   showTopTabs = false,
-  topTabs
-}) => {
+  topTabs,
+}: MainLayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <SkipLink />
+    <div className="min-h-screen bg-background text-foreground">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground"
+      >
+        Skip to main content
+      </a>
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm" role="banner">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link to="/">
-              <motion.div
-                className="flex items-center space-x-2"
-                whileHover={{ scale: 1.05 }}
-              >
-                <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">LF</span>
-                </div>
-                <span className="text-xl font-bold text-gray-900 dark:text-white">
-                  Learning Management
-                </span>
-              </motion.div>
-            </Link>
+      <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
+        <div className="flex h-16 items-center gap-4 px-4 sm:px-6">
+          <Link to="/" className="flex items-center gap-2">
+            <span className="flex size-8 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
+              SD
+            </span>
+            <span className="hidden text-sm font-semibold sm:inline">System Design Hub</span>
+          </Link>
 
-            {/* Desktop Navigation */}
-            <div className={cn(
-              'hidden md:flex items-center space-x-6',
-              showTopTabs ? 'flex-1 justify-center' : 'flex-1 justify-end'
-            )}>
-              {showTopTabs && topTabs}
-            </div>
+          {showTopTabs && <div className="hidden flex-1 justify-center md:flex">{topTabs}</div>}
+          {!showTopTabs && <div className="flex-1" />}
 
-            {/* Right side actions */}
-            <div className="flex items-center space-x-4">
-              <SearchBar />
-              <ThemeToggle />
-
-              {/* Profile Avatar */}
-              <div className="flex items-center">
-                <SignedIn>
-                  <UserButton
-                    afterSignOutUrl="/"
-                    appearance={{
-                      elements: {
-                        avatarBox: "w-8 h-8"
-                      }
-                    }}
-                  />
-                </SignedIn>
-                <SignedOut>
-                  <SignInButton mode="modal">
-                    <button className="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
-                      Sign In
-                    </button>
-                  </SignInButton>
-                </SignedOut>
-              </div>
-            </div>
+          <div className="flex items-center gap-2">
+            <SearchBar />
+            <ThemeToggle />
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <Button variant="ghost" size="sm">
+                  Sign In
+                </Button>
+              </SignInButton>
+            </SignedOut>
           </div>
         </div>
-
-        {/* Mobile Top Tabs */}
         {showTopTabs && (
-          <div className="md:hidden border-t border-gray-200 dark:border-gray-700">
-            <div className="px-4 py-2">
-              {topTabs}
-            </div>
+          <div className="border-t px-4 py-2 md:hidden">
+            {topTabs}
           </div>
         )}
       </header>
 
-      {/* Main Content */}
-      <main
-        id="main-content"
-        className={cn(
-          'flex-1',
-          showBottomNav ? 'pb-20 md:pb-0' : ''
-        )}
-        role="main"
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          {children}
-        </motion.div>
+      <main id="main-content" className={cn(showBottomNav && 'pb-20 md:pb-0')}>
+        {children}
       </main>
 
-      {/* Mobile Bottom Navigation */}
-      {showBottomNav && (
-        <BottomNav />
-      )}
+      {showBottomNav && <BottomNav />}
     </div>
   );
-};
+}
 
-// Skip Link for Accessibility
-const SkipLink: React.FC = () => (
-  <a
-    href="#main-content"
-    className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium focus-ring"
-  >
-    Skip to main content
-  </a>
-);
-
-// Bottom Navigation Component
-const BottomNav: React.FC = () => {
+function BottomNav() {
   const navItems = [
-    { id: 'architecture', label: 'Architecture', path: '/architecture', icon: 'Grid3X3' },
-    { id: 'dsa', label: 'DSA', path: '/dsa', icon: 'Code' },
-    { id: 'certifications', label: 'Certifications', path: '/certifications', icon: 'Award' }
-  ];
+    { id: 'system-design', label: 'System Design', path: '/system-design', show: isFeatureEnabled('systemDesign') },
+    { id: 'ai-system-design', label: 'AI Design', path: '/system-design/ai', show: isFeatureEnabled('aiSystemDesign') },
+    { id: 'dsa', label: 'DSA', path: '/dsa', show: isFeatureEnabled('dsa') },
+    { id: 'certifications', label: 'Certifications', path: '/certifications', show: isFeatureEnabled('certifications') },
+  ].filter((item) => item.show);
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg"
-      role="navigation"
+      className="fixed right-0 bottom-0 left-0 z-50 border-t bg-background md:hidden"
       aria-label="Main navigation"
     >
-      <div className="flex items-center justify-around h-16 px-4">
+      <div className="flex h-16 items-center justify-around px-2">
         {navItems.map((item) => (
           <a
             key={item.id}
             href={item.path}
-            className="flex flex-col items-center justify-center space-y-1 p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-ring"
-            aria-label={`Navigate to ${item.label} section`}
+            className="rounded-md px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
           >
-            <motion.div
-              className="w-6 h-6"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {/* We'll use Lucide icons here */}
-              <span className="text-sm">{item.icon}</span>
-            </motion.div>
-            <span className="text-xs font-medium">{item.label}</span>
+            {item.label}
           </a>
         ))}
       </div>
     </nav>
   );
-};
+}

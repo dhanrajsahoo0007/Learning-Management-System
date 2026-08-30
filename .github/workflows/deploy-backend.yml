@@ -1,0 +1,46 @@
+name: Deploy Backend to Fly.io
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy ${{ matrix.service }} to Fly.io
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: gateway
+            dir: backend/services/gateway
+          - service: dsa
+            dir: backend/services/dsa
+          - service: system-design
+            dir: backend/services/system-design
+          - service: ai-system-design
+            dir: backend/services/ai-system-design
+          - service: certifications
+            dir: backend/services/certifications
+          - service: gamification
+            dir: backend/services/gamification
+          - service: webhooks
+            dir: backend/services/webhooks
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy ${{ matrix.service }}
+        working-directory: ${{ matrix.dir }}
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl deploy --remote-only

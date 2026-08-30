@@ -1,98 +1,65 @@
 import React from 'react';
-import { Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { ProgressRing } from '@/components/ui/ProgressRing';
-import { ArchitectureTopic } from '@/data/systemDesignData';
+import { Routes, Route, useNavigate, useParams, useLocation, Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
+import { ArchitectureTopic } from '@/data/systemDesignTypes';
 import { systemDesignService } from '@/api/systemDesign';
-import { Scale, Grid3X3, Database, Router, MessageSquare, Split, Zap, Eye, Brain, Search } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { findTopicById, getTopicPath } from '@/data/curriculum';
+import {
+  flattenOutline,
+  getCourseTitle,
+  getOutlineForTrack,
+} from '@/data/courseOutline';
+import { LessonView } from '@/components/system-design/LessonView';
+import { CourseLayout } from '@/components/system-design/CourseLayout';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const iconMap = {
-  Scale,
-  Grid3X3,
-  Database,
-  Router,
-  MessageSquare,
-  Split,
-  Zap,
-  Eye,
-  Brain,
-  Search
-};
-
-
-// System Design Topic Card Component
-const TopicCard: React.FC<{ topic: ArchitectureTopic }> = ({ topic }) => {
-  const navigate = useNavigate();
-  const IconComponent = iconMap[topic.icon as keyof typeof iconMap];
+const TrackHome: React.FC<{ isAIPath: boolean }> = ({ isAIPath }) => {
+  const track = isAIPath ? 'ai' : 'classic';
+  const outline = getOutlineForTrack(track);
+  const firstLesson = flattenOutline(outline, { includeExternal: false })[0];
 
   return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.2 }}
-    >
-      <Card
-        className="h-full cursor-pointer group"
-        onClick={() => navigate(`/system-design/${topic.id}`)}
-      >
-        <CardHeader>
-          <div className="flex items-start justify-between mb-3">
-            <div className={cn(
-              'w-12 h-12 rounded-lg flex items-center justify-center',
-              topic.color
-            )}>
-              <IconComponent className="w-6 h-6 text-white" />
-            </div>
-            <Badge variant={
-              topic.difficulty === 'Beginner' ? 'success' :
-              topic.difficulty === 'Intermediate' ? 'warning' : 'danger'
-            }>
-              {topic.difficulty}
-            </Badge>
-          </div>
-          <CardTitle className="text-lg group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-            {topic.title}
-          </CardTitle>
-          <CardDescription className="line-clamp-2">
-            {topic.description}
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <ProgressRing progress={topic.progress} size={40} />
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                {topic.progress}% complete
-              </span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+    <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+      <p className="mb-2 text-xs font-semibold tracking-wider text-primary uppercase">
+        Course
+      </p>
+      <h1 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl">
+        {getCourseTitle(track)}
+      </h1>
+      <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
+        {isAIPath
+          ? 'Start with the classic building blocks, then work through AI serving, RAG, eval, and product designs. Pick a chapter from the outline.'
+          : 'Work through the primitives first, then design real products the way you would in a 45-minute interview. The outline on the left is the course.'}
+      </p>
+      {firstLesson && (
+        <Button asChild>
+          <Link to={getTopicPath(firstLesson)}>
+            Start with {firstLesson.title}
+            <ArrowRight className="size-4" />
+          </Link>
+        </Button>
+      )}
+    </div>
   );
 };
 
-
-// Architecture Topic Detail Component
 const TopicDetail: React.FC = () => {
   const { topicId } = useParams();
   const navigate = useNavigate();
-
-
+  const location = useLocation();
   const [topic, setTopic] = React.useState<ArchitectureTopic | null>(null);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     const fetchTopic = async () => {
       if (!topicId) return;
+      setLoading(true);
       try {
         const data = await systemDesignService.getTopicById(topicId);
         setTopic(data);
-      } catch (error) {
-        console.error('Failed to fetch topic:', error);
+      } catch {
+        setTopic(findTopicById(topicId) || null);
       } finally {
         setLoading(false);
       }
@@ -101,364 +68,38 @@ const TopicDetail: React.FC = () => {
   }, [topicId]);
 
   if (loading) {
-     return (
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-        </div>
-     );
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <Skeleton className="h-10 w-10 rounded-full" />
+      </div>
+    );
   }
 
   if (!topic) {
+    const back = location.pathname.includes('/ai') ? '/system-design/ai' : '/system-design';
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            Topic not found
-          </h2>
-          <button
-            onClick={() => navigate('/system-design')}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            Back to System Design
-          </button>
-        </div>
+      <div className="mx-auto max-w-3xl px-4 py-12 text-center">
+        <h2 className="mb-4 text-2xl font-bold">Topic not found</h2>
+        <Button type="button" onClick={() => navigate(back)}>
+          Back
+        </Button>
       </div>
     );
   }
 
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <button
-          onClick={() => navigate('/system-design')}
-          className="mb-4 px-4 py-2 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
-        >
-          ← Back to System Design
-        </button>
-
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              {topic.title}
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
-              {topic.description}
-            </p>
-          </div>
-          <div className="ml-6">
-            <ProgressRing progress={topic.progress} size={80} />
-          </div>
-        </div>
-      </div>
-
-      {/* Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Overview */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Overview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                {topic.content.overview}
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Concepts */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Key Concepts</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {topic.content.concepts.map((concept, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                  >
-                    <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
-                    <span className="text-gray-900 dark:text-white font-medium">
-                      {concept}
-                    </span>
-                  </motion.div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Steps */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Implementation Steps</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {topic.content.steps?.map((step, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.2 }}
-                    className="flex items-start space-x-4"
-                  >
-                    <div className="flex-shrink-0 w-8 h-8 bg-primary-500 text-white rounded-full flex items-center justify-center font-semibold text-sm">
-                      {index + 1}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                        {step.title}
-                      </h4>
-                      <p className="text-gray-600 dark:text-gray-400">
-                        {step.description}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Examples */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Real-world Examples</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                {topic.content.examples?.map((example, index) => (
-                  <motion.li
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="flex items-start space-x-3"
-                  >
-                    <div className="w-1.5 h-1.5 bg-primary-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {example}
-                    </span>
-                  </motion.li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Progress Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Progress</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center">
-                <ProgressRing progress={topic.progress} size={100} className="mb-4" />
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {topic.progress}% complete
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Difficulty Badge */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <Badge variant={
-                  topic.difficulty === 'Beginner' ? 'success' :
-                  topic.difficulty === 'Intermediate' ? 'warning' : 'danger'
-                } className="text-sm px-3 py-1">
-                  {topic.difficulty} Level
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <button className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
-                Mark as Complete
-              </button>
-              <button className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-                Take Notes
-              </button>
-              <button className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                Practice Quiz
-              </button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
+  return <LessonView topic={topic} />;
 };
 
-// Main System Design Page Component
 const SystemDesign: React.FC = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  
-  // Detect if we're on the AI system design path
-  const isAIPath = location.pathname.startsWith('/system-design/ai');
-  
-  const [topics, setTopics] = React.useState<ArchitectureTopic[]>([]);
-  const [aiTopics, setAiTopics] = React.useState<ArchitectureTopic[]>([]);
-  const [loading, setLoading] = React.useState(true);
-
-  React.useEffect(() => {
-    const fetchTopics = async () => {
-      try {
-        const [regularData, aiData] = await Promise.all([
-          systemDesignService.getTopics(),
-          systemDesignService.getAITopics()
-        ]);
-        setTopics(regularData);
-        setAiTopics(aiData);
-      } catch (error) {
-        console.error('Failed to fetch topics:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTopics();
-  }, []);
-
-  if (loading) {
-    return (
-       <div className="flex items-center justify-center min-h-[400px]">
-         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-       </div>
-    );
-  }
-
-  const currentTopics = isAIPath ? aiTopics : topics;
-  
   return (
-    <Routes>
-      <Route
-        index
-        element={
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* Tab Switcher */}
-            <div className="flex justify-center mb-6 space-x-4">
-              <button
-                className={!isAIPath ? 'px-4 py-2 bg-primary-600 text-white rounded' : 'px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded'}
-                onClick={() => navigate('/system-design')}
-              >
-                System Design
-              </button>
-              <button
-                className={isAIPath ? 'px-4 py-2 bg-primary-600 text-white rounded' : 'px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded'}
-                onClick={() => navigate('/system-design/ai')}
-              >
-                AI System Design
-              </button>
-            </div>
-            {/* Hero Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-center mb-12"
-            >
-              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-4">
-                Master <span className="text-primary-600 dark:text-primary-400">{isAIPath ? 'AI ' : ''}System Design</span>
-              </h1>
-              <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
-                {isAIPath 
-                  ? 'Learn AI-specific system design patterns, ML infrastructure, and scalable AI architectures.'
-                  : 'Learn scalable architecture patterns, distributed systems, and design principles used by top tech companies.'}
-              </p>
-            </motion.div>
-
-            {/* Topics Grid */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            >
-              {currentTopics.map((topic, index) => (
-                <motion.div
-                  key={topic.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
-                >
-                  <TopicCard topic={topic} />
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        }
-      />
-      <Route path=":topicId" element={<TopicDetail />} />
-      <Route path="ai" element={
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Tab Switcher */}
-          <div className="flex justify-center mb-6 space-x-4">
-            <button
-              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded"
-              onClick={() => navigate('/system-design')}
-            >
-              System Design
-            </button>
-            <button
-              className="px-4 py-2 bg-primary-600 text-white rounded"
-              onClick={() => navigate('/system-design/ai')}
-            >
-              AI System Design
-            </button>
-          </div>
-          {/* Hero Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-4">
-              Master <span className="text-primary-600 dark:text-primary-400">AI System Design</span>
-            </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
-              Learn AI-specific system design patterns, ML infrastructure, and scalable AI architectures.
-            </p>
-          </motion.div>
-
-          {/* Topics Grid */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
-            {aiTopics.map((topic, index) => (
-              <motion.div
-                key={topic.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-              >
-                <TopicCard topic={topic} />
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      } />
-      <Route path="ai/:topicId" element={<TopicDetail />} />
-    </Routes>
+    <CourseLayout>
+      <Routes>
+        <Route index element={<TrackHome isAIPath={false} />} />
+        <Route path="ai" element={<TrackHome isAIPath={true} />} />
+        <Route path="ai/:topicId" element={<TopicDetail />} />
+        <Route path=":topicId" element={<TopicDetail />} />
+      </Routes>
+    </CourseLayout>
   );
 };
 

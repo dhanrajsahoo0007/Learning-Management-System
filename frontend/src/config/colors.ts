@@ -107,28 +107,6 @@ export const semanticColors = {
   },
 } as const;
 
-/**
- * Gradient definitions
- */
-export const gradients = {
-  primary: 'from-primary-600 via-blue-600 to-purple-600',
-  hero: 'from-slate-50 via-white to-slate-50',
-  heroDark: 'from-slate-950 via-slate-900 to-slate-950',
-  
-  // Learning path gradients
-  architecture: 'from-indigo-500 to-purple-600',
-  dsa: 'from-emerald-500 to-teal-600',
-  certifications: 'from-orange-500 to-red-600',
-  
-  // Background gradients
-  bgArchitecture: 'from-indigo-50 to-purple-50',
-  bgArchitectureDark: 'from-indigo-950/50 to-purple-950/50',
-  bgDsa: 'from-emerald-50 to-teal-50',
-  bgDsaDark: 'from-emerald-950/50 to-teal-950/50',
-  bgCertifications: 'from-orange-50 to-red-50',
-  bgCertificationsDark: 'from-orange-950/50 to-red-950/50',
-} as const;
-
 export type ColorScale = typeof colors[keyof typeof colors];
 export type ColorShade = keyof ColorScale;
 export type SemanticColor = keyof typeof semanticColors;

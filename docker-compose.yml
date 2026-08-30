@@ -1,0 +1,193 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_CLERK_PUBLISHABLE_KEY=${VITE_CLERK_PUBLISHABLE_KEY}
+      - VITE_API_BASE_URL=http://localhost:8080/api
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+    depends_on:
+      - gateway
+    networks:
+      - lms-network
+
+  gateway:
+    build:
+      context: ./backend
+      dockerfile: services/gateway/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - ENVIRONMENT=development
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_AUTH_TOKEN=${DATABASE_AUTH_TOKEN}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - DSA_SERVICE_URL=${DSA_SERVICE_URL:-}
+      - SYSTEM_DESIGN_SERVICE_URL=http://system-design:8083
+      - AI_SYSTEM_DESIGN_SERVICE_URL=http://ai-system-design:8084
+      - CERTIFICATIONS_SERVICE_URL=${CERTIFICATIONS_SERVICE_URL:-}
+      - GAMIFICATION_SERVICE_URL=http://gamification:8086
+      - FEATURE_DSA_ENABLED=${FEATURE_DSA_ENABLED:-false}
+      - FEATURE_CERTIFICATIONS_ENABLED=${FEATURE_CERTIFICATIONS_ENABLED:-false}
+      - FEATURE_SYSTEM_DESIGN_ENABLED=${FEATURE_SYSTEM_DESIGN_ENABLED:-true}
+      - FEATURE_AI_SYSTEM_DESIGN_ENABLED=${FEATURE_AI_SYSTEM_DESIGN_ENABLED:-true}
+      - FEATURE_GAMIFICATION_ENABLED=${FEATURE_GAMIFICATION_ENABLED:-true}
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - system-design
+      - ai-system-design
+      - gamification
+      - redis
+    networks:
+      - lms-network
+
+  dsa:
+    profiles: ["full", "dsa"]
+    build:
+      context: ./backend
+      dockerfile: services/dsa/Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=8082
+      - ENVIRONMENT=development
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_AUTH_TOKEN=${DATABASE_AUTH_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+      - GAMIFICATION_SERVICE_URL=http://gamification:8086
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - gamification
+      - redis
+    networks:
+      - lms-network
+
+  system-design:
+    build:
+      context: ./backend
+      dockerfile: services/system-design/Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      - PORT=8083
+      - ENVIRONMENT=development
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_AUTH_TOKEN=${DATABASE_AUTH_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+      - GAMIFICATION_SERVICE_URL=http://gamification:8086
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - gamification
+      - redis
+    networks:
+      - lms-network
+
+  ai-system-design:
+    build:
+      context: ./backend
+      dockerfile: services/ai-system-design/Dockerfile
+    ports:
+      - "8084:8084"
+    environment:
+      - PORT=8084
+      - ENVIRONMENT=development
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_AUTH_TOKEN=${DATABASE_AUTH_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+      - GAMIFICATION_SERVICE_URL=http://gamification:8086
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - gamification
+      - redis
+    networks:
+      - lms-network
+
+  certifications:
+    profiles: ["full", "certifications"]
+    build:
+      context: ./backend
+      dockerfile: services/certifications/Dockerfile
+    ports:
+      - "8085:8085"
+    environment:
+      - PORT=8085
+      - ENVIRONMENT=development
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_AUTH_TOKEN=${DATABASE_AUTH_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+      - GAMIFICATION_SERVICE_URL=http://gamification:8086
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - gamification
+      - redis
+    networks:
+      - lms-network
+
+  gamification:
+    build:
+      context: ./backend
+      dockerfile: services/gamification/Dockerfile
+    ports:
+      - "8086:8086"
+    environment:
+      - PORT=8086
+      - ENVIRONMENT=development
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_AUTH_TOKEN=${DATABASE_AUTH_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    networks:
+      - lms-network
+
+  webhooks:
+    build:
+      context: ./backend
+      dockerfile: services/webhooks/Dockerfile
+    ports:
+      - "8087:8087"
+    environment:
+      - PORT=8087
+      - ENVIRONMENT=development
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_AUTH_TOKEN=${DATABASE_AUTH_TOKEN}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+      - CLERK_WEBHOOK_SECRET=${CLERK_WEBHOOK_SECRET}
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    networks:
+      - lms-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - lms-network
+
+volumes:
+  redis-data:
+
+networks:
+  lms-network:
+    driver: bridge
