@@ -63,7 +63,7 @@ const Home: React.FC = () => {
             )}
             {isFeatureEnabled('aiSystemDesign') && (
               <Button size="lg" variant="outline" asChild>
-                <Link to={getCourseById('ai-fundamentals').homePath}>Explore AI Fundamentals</Link>
+                <Link to={getCourseById('aiml-ml-system-design').homePath}>Explore AI Fundamentals</Link>
               </Button>
             )}
             {isFeatureEnabled('aiMl') && (
@@ -85,7 +85,7 @@ const Home: React.FC = () => {
                   {family.family === 'classic'
                     ? 'Learn the primitives, then design real products.'
                     : family.family === 'ai'
-                      ? 'Serving and retrieval first, then the full ML system design catalog, then AI product designs.'
+                      ? 'Start with ML system design fundamentals, then apply them to AI product designs.'
                       : 'Learning paths, machine learning algorithms, and interview drills.'}
                 </p>
               </div>

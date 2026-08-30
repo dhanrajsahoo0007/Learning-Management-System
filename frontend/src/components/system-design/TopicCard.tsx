@@ -9,7 +9,8 @@ import {
   Scale, Grid3X3, Database, Router, MessageSquare, Split, Zap, Eye, Brain, Search,
   Target, Globe, Hash, Radio, Shield, HardDrive, Link, Newspaper, Briefcase, Heart,
   Home, Plane, Car, MessageCircle, Play, Camera, FileText, GitBranch, Server, Coins,
-  Building, Code, Sparkles, Image, Phone, Users,
+  Building, Code, Sparkles, Image, Phone, Users, Music, Tv, Video, Mail, Wallet,
+  UtensilsCrossed, Ticket,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -17,7 +18,8 @@ const iconMap = {
   Scale, Grid3X3, Database, Router, MessageSquare, Split, Zap, Eye, Brain, Search,
   Target, Globe, Hash, Radio, Shield, HardDrive, Link, Newspaper, Briefcase, Heart,
   Home, Plane, Car, MessageCircle, Play, Camera, FileText, GitBranch, Server, Coins,
-  Building, Code, Sparkles, Image, Phone, Users,
+  Building, Code, Sparkles, Image, Phone, Users, Music, Tv, Video, Mail, Wallet,
+  UtensilsCrossed, Ticket,
 };
 
 export const TopicCard: React.FC<{ topic: ArchitectureTopic }> = ({ topic }) => {

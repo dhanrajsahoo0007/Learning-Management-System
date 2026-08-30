@@ -40,7 +40,7 @@ const CourseHome: React.FC<{ courseId: CourseId; hubKey?: keyof typeof aimlHubs 
       <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
         {course.blurb} Pick a chapter from the outline.
       </p>
-      {courseId === 'ai-fundamentals' && (
+      {courseId === 'aiml-ml-system-design' && (
         <p className="mb-6 rounded-lg border bg-card px-4 py-3 text-sm text-muted-foreground">
           These chapters assume the classic primitives.{' '}
           <Link to={getCourseHomePath('classic-fundamentals')} className="font-medium text-primary hover:underline">
@@ -142,8 +142,8 @@ const SystemDesign: React.FC = () => {
         <Route index element={<Navigate to="/system-design/fundamentals" replace />} />
         <Route path="fundamentals" element={<CourseHome courseId="classic-fundamentals" />} />
         <Route path="problems" element={<CourseHome courseId="classic-problems" />} />
-        <Route path="ai" element={<Navigate to="/system-design/ai/fundamentals" replace />} />
-        <Route path="ai/fundamentals" element={<CourseHome courseId="ai-fundamentals" />} />
+        <Route path="ai" element={<Navigate to="/system-design/ai/ml-system-design" replace />} />
+        <Route path="ai/fundamentals" element={<Navigate to="/system-design/ai/ml-system-design" replace />} />
         <Route path="ai/problems" element={<CourseHome courseId="ai-problems" />} />
         <Route
           path="ai/ml-system-design"

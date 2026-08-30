@@ -33,7 +33,7 @@ export const featureModules: FeatureModule[] = [
     id: 'aiSystemDesign',
     enabled: featureFlags.aiSystemDesign,
     label: 'AI System Design',
-    path: '/system-design/ai/fundamentals',
+    path: '/system-design/ai/ml-system-design',
     description: 'Design patterns for AI and ML systems',
   },
   {

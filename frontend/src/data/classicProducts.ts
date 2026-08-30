@@ -1,4 +1,15 @@
 import { ArchitectureTopic, emptyContent } from './systemDesignTypes';
+import { tinderTopic } from './products/tinder';
+import { youtubeTopic } from './products/youtube';
+import { spotifyTopic } from './products/spotify';
+import { netflixTopic } from './products/netflix';
+import { zoomTopic } from './products/zoom';
+import { slackTopic } from './products/slack';
+import { gmailTopic } from './products/gmail';
+import { googleSearchTopic } from './products/googleSearch';
+import { paytmTopic } from './products/paytm';
+import { zomatoTopic } from './products/zomato';
+import { bookmyshowTopic } from './products/bookmyshow';
 
 export const classicProducts: ArchitectureTopic[] = [
   {
@@ -258,95 +269,7 @@ export const classicProducts: ArchitectureTopic[] = [
       practicePrompt: 'Add “open to work” visibility that recruiters can filter without leaking to a member’s company.',
     }),
   },
-  {
-    id: 'tinder',
-    title: 'Tinder',
-    description: 'Geo candidate generation, ranking, unseen-card tracking, atomic matches, then 1:1 chat.',
-    difficulty: 'Advanced',
-    progress: 0,
-    icon: 'Heart',
-    color: 'bg-pink-600',
-    section: 'products',
-    track: 'classic',
-    prerequisites: ['databases', 'caching', 'realtime', 'reliability'],
-    estimatedMinutes: 50,
-    order: 23,
-    content: emptyContent({
-      overview: 'Tinder is a two-sided marketplace of attention. The deck is a geo + preference query with ranking and “never show again.” A match is a distributed AND of two likes.',
-      whyItExists: 'People want nearby, filtered, fresh recommendations and a chat unlock only when both opt in.',
-      whenToUse: ['Geo + ranking interviews', 'Matching / two-sided like graphs'],
-      functionalRequirements: [
-        { title: 'Deck', detail: 'Cards in radius with age/gender/prefs.' },
-        { title: 'Swipe', detail: 'Like, pass, superlike.' },
-        { title: 'Match', detail: 'Mutual like creates a conversation.' },
-        { title: 'Chat', detail: '1:1 after match.' },
-      ],
-      nonFunctionalRequirements: [
-        { title: 'Deck latency', detail: '50-100ms candidate fetch budget.' },
-        { title: 'Freshness', detail: 'Do not reshuffle the same 20 faces.' },
-        { title: 'Fairness / abuse', detail: 'Bots, like-bombs, rate limits.' },
-      ],
-      estimates: [
-        { label: 'Swipe QPS', value: 'Very high writes' },
-        { label: 'Deck reads', value: 'High, bursty when opening the app' },
-        { label: 'Chat', value: 'Low compared to WhatsApp' },
-      ],
-      concepts: ['Geohash / S2', 'Seen-set', 'Atomic match', 'Rate-limited likes'],
-      walkthrough: [
-        { title: 'Open deck', description: 'Resolve user geohash + neighbors, fetch candidate ids, subtract seen/likes/passes, rank, hydrate photos from CDN.' },
-        { title: 'Like', description: 'Record like. If reverse like exists, create match + conversation in a transaction or compare-and-set.' },
-        { title: 'Notify', description: 'Push + websocket if online.' },
-      ],
-      steps: [
-        { title: 'Index people by geo cells', description: 'Update cell membership when they move.' },
-        { title: 'Keep a seen structure', description: 'Redis set or bloom+source-of-truth for “already swiped.”' },
-        { title: 'Make match atomic', description: 'Do not create two chats for one pair.' },
-      ],
-      apis: [
-        { method: 'GET', path: '/v1/recs', description: 'Next deck page' },
-        { method: 'POST', path: '/v1/swipes', description: '{ targetId, action }' },
-        { method: 'GET', path: '/v1/matches', description: 'Match list' },
-        { method: 'POST', path: '/v1/matches/:id/messages', description: 'Chat send' },
-      ],
-      dataModel: [
-        { name: 'profiles', columns: ['user_id', 'geo_cell', 'lat', 'lng', 'prefs_json', 'active_at'] },
-        { name: 'swipes', columns: ['from_id', 'to_id', 'action', 'ts'], notes: 'PK (from_id, to_id)' },
-        { name: 'matches', columns: ['id', 'user_a', 'user_b', 'created_at'] },
-      ],
-      architecture: 'Recs service (geo index + ranker) + swipe/match service + photo CDN + lightweight chat + notification. Redis for last-active and seen sets.',
-      diagram: `flowchart TB
-    App --> Recs
-    Recs --> Geo[(Geo index)]
-    Recs --> Seen[(Seen / swipe sets)]
-    App --> Swipe[Swipe service]
-    Swipe --> Likes[(Likes)]
-    Swipe --> Match{Reverse like?}
-    Match -->|yes| Chat`,
-      deepDives: [
-        { title: 'Geohash neighbors', body: 'A single cell is not a radius. Query the cell plus neighbors, then filter by exact haversine and prefs. S2 cells are the same idea with better polar behavior.' },
-        { title: 'Seen cards', body: 'A Redis SET per user of swiped ids, capped and snapshotted to SQL. Bloom filters can hide unseen people (false positive = skipped candidate), which is acceptable if you rebuild periodically.' },
-        { title: 'Match atomicity', body: 'Store likes in a canonical pair order or use a compare-and-set on match(user_min, user_max). Double-like races are the classic bug.' },
-      ],
-      tradeoffs: [
-        'Rank by popularity and the app becomes a beauty contest; inject activity and inventory fairness.',
-        'Larger radius: more candidates, worse locality.',
-      ],
-      bottlenecks: ['Hot downtown geo cells', 'Swipe write QPS', 'Bots'],
-      scalingPath: [
-        { scale: '1K', focus: 'PostGIS + SQL likes' },
-        { scale: '1M', focus: 'Geohash KV + Redis seen + match service' },
-        { scale: '100M', focus: 'City shards, dedicated ranker, abuse ML' },
-      ],
-      interviewScript: [
-        '“Candidates come from geo cells, not a table scan.”',
-        '“A match is an atomic check of the reverse like, then one conversation row.”',
-      ],
-      commonMistakes: ['No seen-set', 'Chat architecture bigger than WhatsApp', 'No rate limits'],
-      relatedTopics: ['realtime', 'reliability', 'embedding-matching'],
-      examples: ['Tinder', 'Bumble'],
-      practicePrompt: 'Keep deck latency under 100ms when a festival dumps 50k actives into one geohash.',
-    }),
-  },
+  tinderTopic,
   {
     id: 'airbnb',
     title: 'Airbnb',
@@ -665,81 +588,7 @@ export const classicProducts: ArchitectureTopic[] = [
       practicePrompt: 'Add multi-device without breaking E2E.',
     }),
   },
-  {
-    id: 'youtube',
-    title: 'YouTube / Video Streaming',
-    description: 'Upload and transcode ladder, CDN + ABR playback, and comments/likes isolated from the watch path.',
-    difficulty: 'Advanced',
-    progress: 0,
-    icon: 'Play',
-    color: 'bg-red-600',
-    section: 'products',
-    track: 'classic',
-    prerequisites: ['storage-media', 'cdn', 'message-queues', 'search-feeds'],
-    estimatedMinutes: 45,
-    order: 28,
-    content: emptyContent({
-      overview: 'YouTube is a media pipeline plus a catalog. Watch traffic is almost all CDN. Upload is a job system. Recommendations are a separate AI-ish stack.',
-      whyItExists: 'User-generated video at internet scale needs processing and edge delivery, not a single MP4 on an app server.',
-      whenToUse: ['Video', 'CDN deep dive', 'Async processing'],
-      functionalRequirements: [
-        { title: 'Upload', detail: 'Resumable, then process.' },
-        { title: 'Watch', detail: 'ABR playback, resume.' },
-        { title: 'Social', detail: 'Comments, likes — eventually consistent.' },
-        { title: 'Search / home', detail: 'Catalog + recs teaser.' },
-      ],
-      nonFunctionalRequirements: [
-        { title: 'Startup time', detail: 'First frame fast via CDN and a low rung.' },
-        { title: 'Processing delay', detail: 'Minutes for HD ladder is OK if a preview appears sooner.' },
-      ],
-      estimates: [
-        { label: 'Watch bytes', value: 'Dominate cost; origin should be cold' },
-        { label: 'Hot video', value: 'One object, planetary QPS' },
-      ],
-      concepts: ['HLS/DASH ladder', 'Origin shield', 'Transcode graph', 'Counter service'],
-      walkthrough: [
-        { title: 'Upload', description: 'Signed URL to object store. Ingest job probes the file, emits transcode tasks per rendition, writes catalog when the first playable variant exists.' },
-        { title: 'Watch', description: 'Player fetches manifest from CDN, then segments. Watch history write is async and sampled if needed.' },
-      ],
-      steps: [
-        { title: 'Catalog in DB, bytes in object storage', description: '' },
-        { title: 'Publish a low-res variant first', description: 'Better than waiting for 4K.' },
-      ],
-      apis: [
-        { method: 'POST', path: '/v1/videos/upload-url', description: 'Signed PUT' },
-        { method: 'GET', path: '/v1/videos/:id', description: 'Metadata + manifest URL' },
-      ],
-      dataModel: [
-        { name: 'videos', columns: ['id', 'owner', 'status', 'duration', 'manifest_key'] },
-        { name: 'renditions', columns: ['video_id', 'height', 'bitrate', 'key'] },
-      ],
-      architecture: 'Upload API + object store + transcode workers + catalog + CDN. Comments/likes microservices. Recs batch/online (see AI track).',
-      diagram: `flowchart LR
-    Creator -->|PUT| Store
-    Store --> Q[Transcode]
-    Q --> Store
-    Viewer --> CDN
-    CDN --> Store
-    Viewer --> Catalog`,
-      deepDives: [
-        { title: 'ABR', body: 'Multiple bitrates. Player picks based on bandwidth. CDN caches each segment key independently.' },
-        { title: 'Hot video', body: 'Not an app-tier problem. Pre-warm POPs, origin shield, maybe dedicated popular-video cache.' },
-      ],
-      tradeoffs: ['More renditions: better UX, more $.', 'Comments on the watch API: avoid.'],
-      bottlenecks: ['Transcode backlog after a viral upload wave', 'Copyright scanning queue'],
-      scalingPath: [
-        { scale: 'v1', focus: 'One MP4 + S3 + CloudFront' },
-        { scale: 'v2', focus: 'HLS ladder + workers + catalog' },
-      ],
-      interviewScript: [
-        '“Playback is CDN. The API only returns metadata and a manifest URL. Processing is a DAG of jobs.”',
-      ],
-      commonMistakes: ['Streaming through app servers', 'Coupling likes to the video row with hot updates'],
-      relatedTopics: ['cdn', 'storage-media', 'recommendation-system'],
-      examples: ['YouTube', 'Vimeo'],
-      practicePrompt: 'A World Cup highlight is 50% of global watch QPS. Walk the CDN path.',
-    }),
-  },
+  youtubeTopic,
   {
     id: 'instagram',
     title: 'Instagram',
@@ -819,4 +668,13 @@ export const classicProducts: ArchitectureTopic[] = [
       practicePrompt: 'Add multi-photo carousels without multiplying fan-out writes by slide count.',
     }),
   },
+  spotifyTopic,
+  netflixTopic,
+  zoomTopic,
+  slackTopic,
+  gmailTopic,
+  googleSearchTopic,
+  paytmTopic,
+  zomatoTopic,
+  bookmyshowTopic,
 ];
