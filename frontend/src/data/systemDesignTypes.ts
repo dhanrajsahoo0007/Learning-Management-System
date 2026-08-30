@@ -63,6 +63,13 @@ export interface FollowUpQuestion {
   difficulty?: 'easy' | 'medium' | 'hard';
 }
 
+export interface ComparisonTableData {
+  title: string;
+  headers: string[];
+  rows: string[][];
+  note?: string;
+}
+
 export type LessonDiagramKind = 'excalidraw' | 'mermaid' | 'animation';
 
 export interface LessonDiagram {
@@ -89,6 +96,7 @@ export interface SystemDesignContent {
   nonFunctionalRequirements: RequirementItem[];
   estimates: EstimateItem[];
   concepts: string[];
+  comparisons?: ComparisonTableData[];
   walkthrough: WalkthroughStep[];
   steps: WalkthroughStep[];
   apis: ApiEndpoint[];
@@ -134,6 +142,7 @@ export function emptyContent(partial: Partial<SystemDesignContent> & Pick<System
     nonFunctionalRequirements: [],
     estimates: [],
     concepts: [],
+    comparisons: [],
     walkthrough: [],
     steps: [],
     apis: [],

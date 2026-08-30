@@ -10,8 +10,8 @@ export const featureFlags = {
   systemDesign: true,
   aiSystemDesign: true,
   aiMl: true,
-  dsa: false,
-  certifications: false,
+  dsa: true,
+  certifications: true,
   gamification: true,
 } as const;
 

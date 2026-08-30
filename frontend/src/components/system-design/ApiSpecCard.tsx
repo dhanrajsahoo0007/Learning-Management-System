@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import type { ApiEndpoint } from '@/data/systemDesignTypes';
+import { CopyButton } from './CopyButton';
 
 const METHOD_VARIANT: Record<string, 'default' | 'secondary' | 'success' | 'warning' | 'danger' | 'outline'> = {
   GET: 'secondary',
@@ -20,7 +21,10 @@ export function ApiSpecCard({ api }: { api: ApiEndpoint }) {
 
   return (
     <Collapsible open={expandable ? open : false} onOpenChange={setOpen}>
-      <div className="rounded-lg border border-border bg-muted/30">
+      <div className="group/api relative rounded-lg border border-border bg-muted/30">
+        <div className="absolute top-2 right-9 opacity-0 transition-opacity duration-200 group-hover/api:opacity-100 focus-within:opacity-100">
+          <CopyButton value={api.path} label="Copy path" />
+        </div>
         <CollapsibleTrigger
           disabled={!expandable}
           className={cn(

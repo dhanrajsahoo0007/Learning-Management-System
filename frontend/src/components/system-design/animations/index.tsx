@@ -3,6 +3,8 @@ import { RecsPipelineAnimation } from './RecsPipelineAnimation';
 import { GeoHashGridAnimation } from './GeoHashGridAnimation';
 import { SwipeMatchAnimation } from './SwipeMatchAnimation';
 import { HotCellAnimation } from './HotCellAnimation';
+import { FlowAnimation } from './FlowAnimation';
+import { FLOW_SPECS } from './flows';
 
 const LESSON_ANIMATIONS: Record<string, ComponentType<{ playing?: boolean }>> = {
   'recs-pipeline': RecsPipelineAnimation,
@@ -13,15 +15,22 @@ const LESSON_ANIMATIONS: Record<string, ComponentType<{ playing?: boolean }>> = 
 
 export function LessonAnimation({ id, playing = true }: { id?: string; playing?: boolean }) {
   if (!id) return null;
+
   const Animation = LESSON_ANIMATIONS[id];
-  if (!Animation) return null;
+  const flow = FLOW_SPECS[id];
+  if (!Animation && !flow) return null;
+
   return (
     <div className="rounded-xl border border-border bg-muted/20 p-4">
-      <Animation playing={playing} />
+      {Animation ? (
+        <Animation playing={playing} />
+      ) : (
+        <FlowAnimation nodes={flow.nodes} phases={flow.phases} playing={playing} />
+      )}
     </div>
   );
 }
 
 export function hasLessonAnimation(id?: string) {
-  return Boolean(id && LESSON_ANIMATIONS[id]);
+  return Boolean(id && (LESSON_ANIMATIONS[id] || FLOW_SPECS[id]));
 }

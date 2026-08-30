@@ -4,19 +4,17 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArchitectureTopic, LessonDiagram } from '@/data/systemDesignTypes';
 import { findTopicById, getTopicPath } from '@/data/curriculum';
-import { TinderArchitecturePoster } from '@/assets/diagrams/tinder/TinderArchitecturePoster';
 import { DiagramBlock } from './DiagramBlock';
 import { ExcalidrawPoster } from './ExcalidrawPoster';
 import { ApiSpecCard } from './ApiSpecCard';
+import { ComparisonTable } from './ComparisonTable';
 import { DataModelCard } from './DataModelCard';
 import { FollowUpAccordion } from './FollowUpAccordion';
 import { AnimatedWalkthrough } from './AnimatedWalkthrough';
 import { LessonAnimation } from './animations';
+import { ProductMark, hasProductMark } from './marks/ProductMark';
+import { POSTERS } from './posters';
 import { LessonShell } from './LessonShell';
-
-const POSTERS: Record<string, React.FC> = {
-  'tinder-architecture': TinderArchitecturePoster,
-};
 
 const Section: React.FC<{ title: string; children: React.ReactNode; hide?: boolean }> = ({
   title,
@@ -182,6 +180,14 @@ export const LessonView: React.FC<{ topic: ArchitectureTopic }> = ({ topic }) =>
           </div>
         </Section>
 
+        <Section title="Types at a glance" hide={!content.comparisons?.length}>
+          <div className="space-y-6">
+            {content.comparisons?.map((table) => (
+              <ComparisonTable key={table.title} table={table} />
+            ))}
+          </div>
+        </Section>
+
         <Section title="High-level architecture" hide={!content.architecture && !content.diagram && !posters.length}>
           {content.architecture && (
             <p className="mb-4 leading-relaxed text-foreground">{content.architecture}</p>
@@ -286,7 +292,17 @@ export const LessonView: React.FC<{ topic: ArchitectureTopic }> = ({ topic }) =>
           <Section title="Related lessons">
             <div className="flex flex-wrap gap-2">
               {related.map((item) => (
-                <Button key={item.id} type="button" variant="outline" size="sm" onClick={() => navigate(getTopicPath(item))}>
+                <Button
+                  key={item.id}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(getTopicPath(item))}
+                  className="gap-1.5 transition-transform duration-150 active:scale-[0.97]"
+                >
+                  {item.section === 'products' && hasProductMark(item.id) && (
+                    <ProductMark id={item.id} size="sm" className="text-primary" />
+                  )}
                   {item.title}
                 </Button>
               ))}

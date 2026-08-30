@@ -88,15 +88,17 @@ function BottomNav() {
       className="fixed right-0 bottom-0 left-0 z-50 border-t bg-background md:hidden"
       aria-label="Main navigation"
     >
-      <div className="flex h-16 items-center justify-around px-2">
+      <div className="flex h-16 items-center justify-around gap-1 overflow-x-auto px-2">
         {navItems.map((item) => (
-          <a
+          <Button
             key={item.id}
-            href={item.path}
-            className="rounded-md px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+            asChild
+            variant="ghost"
+            size="sm"
+            className="shrink-0 text-xs text-muted-foreground hover:text-foreground"
           >
-            {item.label}
-          </a>
+            <Link to={item.path}>{item.label}</Link>
+          </Button>
         ))}
       </div>
     </nav>

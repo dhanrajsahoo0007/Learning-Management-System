@@ -90,11 +90,17 @@ const Home: React.FC = () => {
                 </p>
               </div>
               <div className={`grid gap-4 ${family.courses.length === 1 ? 'max-w-xl' : 'md:grid-cols-2'}`}>
-                {family.courses.map((course) => {
+                {family.courses.map((course, courseIndex) => {
                   const progress = getCourseProgress(course.id, isComplete);
                   return (
-                    <Link key={course.id} to={course.homePath}>
-                      <Card className="h-full transition-colors hover:bg-accent/40">
+                    <motion.div
+                      key={course.id}
+                      initial={{ y: 8 }}
+                      animate={{ y: 0 }}
+                      transition={{ duration: 0.28, delay: courseIndex * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                    <Link to={course.homePath} className="group block h-full">
+                      <Card className="h-full transition-all duration-200 group-hover:-translate-y-0.5 group-hover:bg-accent/40 group-hover:ring-1 group-hover:ring-primary/25">
                         <CardContent className="p-6">
                           <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                             {course.kind === 'fundamentals' || course.kind === 'paths'
@@ -118,11 +124,12 @@ const Home: React.FC = () => {
                           </div>
                           <p className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
                             Open course
-                            <ArrowRight className="size-4" />
+                            <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                           </p>
                         </CardContent>
                       </Card>
                     </Link>
+                    </motion.div>
                   );
                 })}
               </div>

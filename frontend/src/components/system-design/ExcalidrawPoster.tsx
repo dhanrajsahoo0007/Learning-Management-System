@@ -26,7 +26,13 @@ export function ExcalidrawPoster({
     <div className={cn('overflow-hidden rounded-xl border border-border bg-card', className)}>
       <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</p>
-        <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(true)}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setOpen(true)}
+          className="transition-transform duration-200 hover:scale-[1.04] active:scale-[0.97]"
+        >
           <Maximize2 className="size-3.5" aria-hidden />
           Expand
         </Button>
@@ -35,7 +41,7 @@ export function ExcalidrawPoster({
       {caption && <p className="border-t border-border px-4 py-2 text-xs text-muted-foreground">{caption}</p>}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[90vh] max-w-5xl overflow-auto">
+        <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-5xl">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
           </DialogHeader>

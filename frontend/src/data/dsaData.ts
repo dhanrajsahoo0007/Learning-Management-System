@@ -56,6 +56,7 @@ export const dsaTopics: DSATopic[] = [
     color: 'bg-blue-500',
     folderPath: '00. Basic Python',
     problemCount: 5,
+    subcomponents: [],
     content: {
       explanation: 'Learn Python basics including syntax, data types, control structures, and functions.',
       examples: [],
@@ -126,6 +127,7 @@ export const dsaTopics: DSATopic[] = [
     color: 'bg-yellow-500',
     folderPath: '02. Prefix Sum',
     problemCount: 8,
+    subcomponents: [],
     content: {
       explanation: 'Prefix sum is a technique to efficiently answer range sum queries in O(1) time after O(n) preprocessing.',
       examples: [],
@@ -830,6 +832,7 @@ export const dsaTopics: DSATopic[] = [
     color: 'bg-teal-600',
     folderPath: '23. Sorting',
     problemCount: 6,
+    subcomponents: [],
     content: {
       explanation: 'Sorting algorithms arrange elements in a specific order.',
       examples: [],
@@ -881,6 +884,7 @@ export const dsaTopics: DSATopic[] = [
     color: 'bg-pink-600',
     folderPath: '25. Design Questions',
     problemCount: 19,
+    subcomponents: [],
     content: {
       explanation: 'Design problems require creating custom data structures and systems.',
       examples: [],

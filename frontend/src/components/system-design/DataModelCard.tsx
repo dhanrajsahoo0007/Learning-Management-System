@@ -1,4 +1,5 @@
 import type { DataModelColumn, DataModelTable } from '@/data/systemDesignTypes';
+import { CopyButton } from './CopyButton';
 
 function normalizeColumn(column: string | DataModelColumn): DataModelColumn {
   return typeof column === 'string' ? { name: column } : column;
@@ -9,9 +10,14 @@ export function DataModelCard({ table }: { table: DataModelTable }) {
   const hasTypes = columns.some((column) => column.type || column.notes);
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border">
+    <div className="group/table overflow-hidden rounded-lg border border-border">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/40 px-4 py-2">
-        <p className="font-mono text-sm font-semibold text-foreground">{table.name}</p>
+        <p className="flex items-center gap-1 font-mono text-sm font-semibold text-foreground">
+          {table.name}
+          <span className="opacity-0 transition-opacity duration-200 group-hover/table:opacity-100 focus-within:opacity-100">
+            <CopyButton value={table.name} label="Copy table name" />
+          </span>
+        </p>
         {table.primaryKey?.length ? (
           <p className="font-mono text-xs text-muted-foreground">PK ({table.primaryKey.join(', ')})</p>
         ) : null}

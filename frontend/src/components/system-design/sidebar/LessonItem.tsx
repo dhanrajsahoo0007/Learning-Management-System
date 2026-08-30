@@ -1,6 +1,8 @@
 import { NavLink } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Check, Code2, FileText, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { ProductMark, hasProductMark } from '../marks/ProductMark';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { getTopicPath } from '@/data/curriculum';
 import type { ArchitectureTopic } from '@/data/systemDesignTypes';
@@ -25,6 +27,7 @@ export function LessonItem({
 }: LessonItemProps) {
   const hasPractice = Boolean(topic.content.practicePrompt);
   const Icon = hasPractice ? Code2 : FileText;
+  const showMark = topic.section === 'products' && hasProductMark(topic.id);
   const lockReason = locked
     ? `Recommended after: ${topic.prerequisites.join(', ')}`
     : undefined;
@@ -44,17 +47,33 @@ export function LessonItem({
       {active && (
         <span className="absolute inset-y-1 left-0 w-0.5 rounded-full bg-sidebar-primary" aria-hidden />
       )}
-      {complete ? (
-        <Check className="size-4 shrink-0 text-sidebar-primary" aria-hidden />
-      ) : (
-        <Icon
-          className={cn(
-            'size-4 shrink-0',
-            active ? 'text-sidebar-primary' : hasPractice ? 'text-orange-500' : 'text-muted-foreground'
+      <span className="relative grid size-4 shrink-0 place-items-center">
+        <motion.span
+          key={complete ? 'check' : 'mark'}
+          initial={{ scale: 0.7 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute inset-0 grid place-items-center"
+        >
+          {complete ? (
+            <Check className="size-4 text-sidebar-primary" aria-hidden />
+          ) : showMark ? (
+            <ProductMark
+              id={topic.id}
+              size="sm"
+              className={active ? 'text-sidebar-primary' : 'text-muted-foreground'}
+            />
+          ) : (
+            <Icon
+              className={cn(
+                'size-4',
+                active ? 'text-sidebar-primary' : hasPractice ? 'text-orange-500' : 'text-muted-foreground'
+              )}
+              aria-hidden
+            />
           )}
-          aria-hidden
-        />
-      )}
+        </motion.span>
+      </span>
       <span className="min-w-0 flex-1 truncate leading-5">{topic.title}</span>
       {isNew && !complete && <Badge className="h-5 bg-emerald-500 px-1.5 text-[10px] text-white">New</Badge>}
       {locked && !complete && <Lock className="size-3.5 shrink-0 text-amber-400" aria-hidden />}

@@ -1,12 +1,15 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import type { WalkthroughStep } from '@/data/systemDesignTypes';
 import { DiagramBlock } from './DiagramBlock';
 import { LessonAnimation, hasLessonAnimation } from './animations';
 
 export function AnimatedWalkthrough({ steps }: { steps: WalkthroughStep[] }) {
+  const reduced = usePrefersReducedMotion();
   const [active, setActive] = useState(0);
   const [playKey, setPlayKey] = useState(0);
   const step = steps[active];
@@ -32,14 +35,16 @@ export function AnimatedWalkthrough({ steps }: { steps: WalkthroughStep[] }) {
                     : 'border-border bg-card hover:bg-muted/50'
                 )}
               >
-                <span
+                <motion.span
+                  animate={selected && !reduced ? { scale: [1, 1.12, 1] } : { scale: 1 }}
+                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
                   className={cn(
                     'mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
                     selected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                   )}
                 >
                   {index + 1}
-                </span>
+                </motion.span>
                 <span className="text-sm font-medium text-foreground">{item.title}</span>
               </button>
             </li>
