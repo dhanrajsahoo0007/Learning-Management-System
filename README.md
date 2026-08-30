@@ -49,6 +49,25 @@ Learning Management is an innovative educational platform that combines:
 - **DSA Mastery**: Solve problems with multiple programming languages
 - **Cloud Expertise**: Prepare for AWS, Azure, GCP, and Kubernetes certifications
 - **Interview Ready**: Practice real-world coding challenges and design questions
+- **AI / ML**: Machine learning algorithms, ML system design, and interview drills ported from the Origins AI Learn content set
+
+### AI / ML content map
+
+The `/ai-ml` section is native TypeScript on this Vite stack (no Next.js or MDX runtime). Source markdown lives in `content/ai-ml/` and is converted by `scripts/convert-aiml-content.mjs`.
+
+| Area | Count | Route |
+|------|------:|-------|
+| Learning path overviews | 5 | `/ai-ml/learning-paths` |
+| Machine learning topics | 33 | `/ai-ml/learning-paths/machine-learning/:topicId` |
+| ML system design topics | 54 | `/system-design/ai/ml-system-design/:topicId` |
+| Interview sets | 3 | `/ai-ml/interviews/:setId` |
+
+Re-run conversion after editing source files:
+
+```bash
+node scripts/convert-aiml-content.mjs
+node scripts/verify-aiml-coverage.mjs
+```
 
 ## 🏗️ Project Structure
 

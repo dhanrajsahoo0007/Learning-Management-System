@@ -7,10 +7,11 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { TopTabs } from '@/components/layout/TopTabs';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Grid3X3, Code, Award } from 'lucide-react';
+import { Grid3X3, Code, Award, Brain } from 'lucide-react';
 import { isFeatureEnabled } from '@/config/features';
 
 const SystemDesign = lazy(() => import('@/pages/SystemDesign'));
+const AiMl = lazy(() => import('@/pages/AiMl'));
 const DSA = lazy(() => import('@/pages/DSA'));
 const Certifications = lazy(() => import('@/pages/Certifications'));
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
@@ -29,14 +30,20 @@ const App: React.FC = () => {
     {
       id: 'system-design',
       label: 'System Design',
-      path: '/system-design',
+      path: '/system-design/fundamentals',
       icon: <Grid3X3 className="w-4 h-4" />,
     },
     {
       id: 'ai-system-design',
       label: 'AI System Design',
-      path: '/system-design/ai',
+      path: '/system-design/ai/fundamentals',
       icon: <Grid3X3 className="w-4 h-4" />,
+    },
+    {
+      id: 'ai-ml',
+      label: 'AI / ML',
+      path: '/ai-ml/learning-paths',
+      icon: <Brain className="w-4 h-4" />,
     },
     {
       id: 'dsa',
@@ -57,6 +64,7 @@ const App: React.FC = () => {
     if (tab.id === 'certifications') return isFeatureEnabled('certifications');
     if (tab.id === 'system-design') return isFeatureEnabled('systemDesign');
     if (tab.id === 'ai-system-design') return isFeatureEnabled('aiSystemDesign');
+    if (tab.id === 'ai-ml') return isFeatureEnabled('aiMl');
     return true;
   });
 
@@ -93,6 +101,20 @@ const App: React.FC = () => {
                 </>
               }
             />
+            {isFeatureEnabled('aiMl') ? (
+              <Route
+                path="/ai-ml/*"
+                element={
+                  <MainLayout showTopTabs={false} showBottomNav={false}>
+                    <Suspense fallback={<PageLoader />}>
+                      <AiMl />
+                    </Suspense>
+                  </MainLayout>
+                }
+              />
+            ) : (
+              <Route path="/ai-ml/*" element={<Navigate to="/" replace />} />
+            )}
             <Route
               path="/system-design/*"
                 element={

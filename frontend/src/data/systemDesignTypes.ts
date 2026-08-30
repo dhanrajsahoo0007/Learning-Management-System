@@ -1,5 +1,7 @@
-export type TopicSection = 'fundamentals' | 'products';
-export type TopicTrack = 'classic' | 'ai';
+import type { ArticleContent } from './aiml/types';
+
+export type TopicSection = 'fundamentals' | 'products' | 'paths' | 'mlsd' | 'interviews';
+export type TopicTrack = 'classic' | 'ai' | 'aiml';
 export type TopicDifficulty = 'Beginner' | 'Intermediate' | 'Advanced';
 
 export interface RequirementItem {
@@ -82,6 +84,7 @@ export interface ArchitectureTopic {
   estimatedMinutes: number;
   order: number;
   content: SystemDesignContent;
+  article?: ArticleContent;
 }
 
 export function emptyContent(partial: Partial<SystemDesignContent> & Pick<SystemDesignContent, 'overview'>): SystemDesignContent {

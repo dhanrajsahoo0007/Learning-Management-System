@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { getAllTopics, getTopicPath } from '@/data/curriculum';
+import { getCourseForTopic, getCourses } from '@/data/courseOutline';
 import { Button } from '@/components/ui/button';
 import {
   CommandDialog,
@@ -16,6 +17,13 @@ export function SearchBar() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const topics = useMemo(() => getAllTopics(), []);
+  const groups = useMemo(() => {
+    const courses = getCourses();
+    return courses.map((course) => ({
+      course,
+      topics: topics.filter((topic) => getCourseForTopic(topic).id === course.id),
+    }));
+  }, [topics]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -61,20 +69,22 @@ export function SearchBar() {
         <CommandInput placeholder="Search our lessons..." />
         <CommandList>
           <CommandEmpty>No lessons match that search.</CommandEmpty>
-          <CommandGroup heading="Lessons">
-            {topics.map((topic) => (
-              <CommandItem
-                key={topic.id}
-                value={`${topic.title} ${topic.description}`}
-                onSelect={() => {
-                  setOpen(false);
-                  navigate(getTopicPath(topic));
-                }}
-              >
-                {topic.title}
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          {groups.map(({ course, topics: courseTopics }) => (
+            <CommandGroup key={course.id} heading={`${course.familyTitle} · ${course.title}`}>
+              {courseTopics.map((topic) => (
+                <CommandItem
+                  key={topic.id}
+                  value={`${course.familyTitle} ${course.title} ${topic.title} ${topic.description}`}
+                  onSelect={() => {
+                    setOpen(false);
+                    navigate(getTopicPath(topic));
+                  }}
+                >
+                  {topic.title}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          ))}
         </CommandList>
       </CommandDialog>
     </>

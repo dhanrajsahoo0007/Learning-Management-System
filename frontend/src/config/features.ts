@@ -9,6 +9,7 @@ export interface FeatureModule {
 export const featureFlags = {
   systemDesign: true,
   aiSystemDesign: true,
+  aiMl: true,
   dsa: false,
   certifications: false,
   gamification: true,
@@ -25,15 +26,22 @@ export const featureModules: FeatureModule[] = [
     id: 'systemDesign',
     enabled: featureFlags.systemDesign,
     label: 'System Design',
-    path: '/system-design',
+    path: '/system-design/fundamentals',
     description: 'Classic system design topics and interview patterns',
   },
   {
     id: 'aiSystemDesign',
     enabled: featureFlags.aiSystemDesign,
     label: 'AI System Design',
-    path: '/system-design/ai',
+    path: '/system-design/ai/fundamentals',
     description: 'Design patterns for AI and ML systems',
+  },
+  {
+    id: 'aiMl',
+    enabled: featureFlags.aiMl,
+    label: 'AI / ML',
+    path: '/ai-ml/learning-paths',
+    description: 'Machine learning paths, ML system design, and interview drills',
   },
   {
     id: 'dsa',
