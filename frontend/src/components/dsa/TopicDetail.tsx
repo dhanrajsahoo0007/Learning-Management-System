@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { ProblemList } from './ProblemList';
 import { difficultyVariant } from './TopicCard';
@@ -17,6 +18,7 @@ export const TopicDetail: React.FC = () => {
   const navigate = useNavigate();
   const [topic, setTopic] = useState<DSATopic | null>(null);
   const [problems, setProblems] = useState<DSAProblemSummary[]>([]);
+  const [problemsError, setProblemsError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,14 +27,26 @@ export const TopicDetail: React.FC = () => {
     const fetchTopic = async () => {
       if (!topicId) return;
       setLoading(true);
+      setProblemsError(null);
       try {
-        const [loadedTopic, loadedProblems] = await Promise.all([
+        const [loadedTopic, problemsResult] = await Promise.all([
           dsaService.getById(topicId),
-          dsaService.getProblems(topicId).catch(() => [] as DSAProblemSummary[]),
+          dsaService.getProblems(topicId).then(
+            (value) => ({ ok: true as const, value }),
+            (error: unknown) => ({
+              ok: false as const,
+              error: error instanceof Error ? error.message : 'Failed to load problems',
+            })
+          ),
         ]);
         if (cancelled) return;
         setTopic(loadedTopic);
-        setProblems(loadedProblems);
+        if (problemsResult.ok) {
+          setProblems(problemsResult.value);
+        } else {
+          setProblems([]);
+          setProblemsError(problemsResult.error);
+        }
       } catch (error) {
         console.error('Failed to fetch topic:', error);
       } finally {
@@ -111,7 +125,17 @@ export const TopicDetail: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ProblemList problems={problems} />
+              {problemsError ? (
+                <Alert variant="destructive">
+                  <AlertTitle>Could not load problems</AlertTitle>
+                  <AlertDescription>
+                    The topic loaded, but the problem list request failed. Restart the DSA
+                    service so it includes the new `/topics/:id/problems` route, then refresh.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <ProblemList problems={problems} />
+              )}
             </CardContent>
           </Card>
         </div>

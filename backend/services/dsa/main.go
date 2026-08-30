@@ -79,8 +79,8 @@ func main() {
 	// DSA routes. Problem ids are slash-separated paths, so the problem route
 	// takes a wildcard rather than a named parameter.
 	app.Get("/topics", dsaHandler.GetAll)
-	app.Get("/topics/:id", dsaHandler.GetByID)
 	app.Get("/topics/:id/problems", dsaHandler.GetProblemsByTopic)
+	app.Get("/topics/:id", dsaHandler.GetByID)
 	app.Get("/problems/*", dsaHandler.GetProblemByID)
 	app.Get("/categories", dsaHandler.GetCategories)
 
