@@ -9,6 +9,7 @@ export interface DSATopic {
   color: string;
   folderPath: string;
   problemCount: number;
+  solvedCount?: number; // How many of the topic's problems have a solution
   subcomponents: string[]; // NEW: List of subfolder names
   content: {
     explanation: string;

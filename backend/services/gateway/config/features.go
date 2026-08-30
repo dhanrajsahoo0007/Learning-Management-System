@@ -16,7 +16,7 @@ type FeatureConfig struct {
 
 func LoadFeatures() FeatureConfig {
 	return FeatureConfig{
-		DSAEnabled:            envBool("FEATURE_DSA_ENABLED", false),
+		DSAEnabled:            envBool("FEATURE_DSA_ENABLED", true),
 		SystemDesignEnabled:   envBool("FEATURE_SYSTEM_DESIGN_ENABLED", true),
 		AISystemDesignEnabled: envBool("FEATURE_AI_SYSTEM_DESIGN_ENABLED", true),
 		CertificationsEnabled: envBool("FEATURE_CERTIFICATIONS_ENABLED", false),

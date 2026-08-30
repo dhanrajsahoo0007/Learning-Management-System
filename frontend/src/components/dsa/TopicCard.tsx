@@ -23,6 +23,11 @@ export const TopicCard: React.FC<{ topic: DSATopic }> = ({ topic }) => {
   const [expanded, setExpanded] = useState(false);
 
   const subcomponents = topic.subcomponents ?? [];
+  const solved = topic.solvedCount ?? 0;
+  const total = topic.problemCount;
+  // Progress is not tracked per user yet, so the ring shows how much of the
+  // topic actually has a worked solution.
+  const coverage = total > 0 ? Math.round((solved / total) * 100) : 0;
 
   return (
     <motion.div
@@ -86,11 +91,13 @@ export const TopicCard: React.FC<{ topic: DSATopic }> = ({ topic }) => {
 
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
-                <ProgressRing progress={topic.progress} size={32} strokeWidth={4} showPercentage={false} />
-                <span>{topic.progress}% complete</span>
+                <ProgressRing progress={coverage} size={32} strokeWidth={4} showPercentage={false} />
+                <span>
+                  {solved} / {total} solved
+                </span>
               </div>
               <div className="flex items-center gap-3">
-                {subcomponents.length > 0 && <span>{subcomponents.length} subtopics</span>}
+                {subcomponents.length > 0 && <span>{subcomponents.length} sections</span>}
                 <span className="inline-flex items-center gap-1 text-primary opacity-0 transition-opacity duration-200 group-hover/card:opacity-100">
                   Open
                   <ArrowRight className="size-3.5" aria-hidden />

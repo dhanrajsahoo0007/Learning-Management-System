@@ -8,6 +8,7 @@ import type { DSATopic } from '@/data/dsaData';
 export const TopicList: React.FC<{ topics: DSATopic[] }> = ({ topics }) => {
   const reduced = usePrefersReducedMotion();
   const totalProblems = topics.reduce((acc, t) => acc + (t.problemCount || 0), 0);
+  const totalSolved = topics.reduce((acc, t) => acc + (t.solvedCount || 0), 0);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -16,8 +17,8 @@ export const TopicList: React.FC<{ topics: DSATopic[] }> = ({ topics }) => {
           Master <span className="text-primary">Data Structures &amp; Algorithms</span>
         </h1>
         <p className="mx-auto mb-8 max-w-3xl text-xl text-muted-foreground">
-          Interactive coding challenges with visual explanations, a code playground, and
-          comprehensive test cases.
+          The full curriculum in order, with worked solutions, complexity analysis, and a code
+          playground for every problem.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-1">
@@ -25,9 +26,9 @@ export const TopicList: React.FC<{ topics: DSATopic[] }> = ({ topics }) => {
             {topics.length} topics
           </span>
           <span aria-hidden>•</span>
-          <span>{totalProblems}+ problems</span>
+          <span>{totalProblems} problems</span>
           <span aria-hidden>•</span>
-          <span>4 languages</span>
+          <span>{totalSolved} with solutions</span>
         </div>
       </div>
 

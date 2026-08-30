@@ -45,6 +45,42 @@ func (h *DSAHandler) GetByID(c *fiber.Ctx) error {
 	return utils.SuccessResponse(c, topic)
 }
 
+// GetProblemsByTopic handles GET /topics/:id/problems
+func (h *DSAHandler) GetProblemsByTopic(c *fiber.Ctx) error {
+	topicID := c.Params("id")
+	if topicID == "" {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Topic ID is required")
+	}
+
+	problems, err := h.dsaRepo.GetProblemsByTopic(c.Context(), topicID)
+	if err != nil {
+		return utils.InternalErrorResponse(c, err)
+	}
+
+	return utils.SuccessResponse(c, problems)
+}
+
+// GetProblemByID handles GET /problems/*
+//
+// A wildcard is used because problem ids are slash-separated paths such as
+// "graphs/dfs/dfs-on-an-undirected-graphs".
+func (h *DSAHandler) GetProblemByID(c *fiber.Ctx) error {
+	id := c.Params("*")
+	if id == "" {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Problem ID is required")
+	}
+
+	problem, err := h.dsaRepo.GetProblemByID(c.Context(), id)
+	if err != nil {
+		return utils.InternalErrorResponse(c, err)
+	}
+	if problem == nil {
+		return utils.NotFoundResponse(c, "DSA problem")
+	}
+
+	return utils.SuccessResponse(c, problem)
+}
+
 // GetCategories handles GET /categories
 func (h *DSAHandler) GetCategories(c *fiber.Ctx) error {
 	categories, err := h.dsaRepo.GetCategories(c.Context())

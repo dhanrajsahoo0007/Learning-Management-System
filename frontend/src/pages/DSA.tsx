@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TopicList } from '@/components/dsa/TopicList';
 import { TopicDetail } from '@/components/dsa/TopicDetail';
+import { ProblemDetail } from '@/components/dsa/ProblemDetail';
 import { dsaService } from '@/api/dsa';
 import type { DSATopic } from '@/data/dsaData';
 
@@ -42,6 +43,9 @@ const DSAHub: React.FC = () => {
 const DSA: React.FC = () => (
   <Routes>
     <Route index element={<DSAHub />} />
+    {/* Problem ids are slash-separated paths, so this route takes a wildcard
+        and is matched ahead of the single-segment topic route. */}
+    <Route path="problem/*" element={<ProblemDetail />} />
     <Route path=":topicId" element={<TopicDetail />} />
   </Routes>
 );
