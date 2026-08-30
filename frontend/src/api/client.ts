@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useAuth } from '@clerk/clerk-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
 // Base API client (no auth)
 export const apiClient = axios.create({

@@ -16,7 +16,18 @@ if (!PUBLISHABLE_KEY) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+    <ClerkProvider
+      publishableKey={PUBLISHABLE_KEY}
+      appearance={{
+        variables: {
+          colorPrimary: '#4f46e5',
+          colorBackground: 'transparent',
+        },
+        elements: {
+          card: 'shadow-none border bg-card',
+        },
+      }}
+    >
       <BrowserRouter>
         <AuthProvider>
           <App />

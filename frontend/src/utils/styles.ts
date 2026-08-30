@@ -1,24 +1,6 @@
 /**
- * Style Utilities
- * 
- * Helper functions for generating dynamic styles and class names.
+ * Style helpers used by DSA / certification surfaces that stay flagged off.
  */
-
-import { gradients } from '@/config/colors';
-
-/**
- * Generate a gradient class string
- */
-export const getGradient = (key: keyof typeof gradients): string => {
-  return `bg-gradient-to-r ${gradients[key]}`;
-};
-
-/**
- * Generate a gradient text class string
- */
-export const getGradientText = (key: keyof typeof gradients): string => {
-  return `text-transparent bg-clip-text bg-gradient-to-r ${gradients[key]}`;
-};
 
 /**
  * Get difficulty color class
@@ -105,18 +87,4 @@ export const getStreakIntensity = (days: number): string => {
   if (days >= 30) return 'animate-pulse';
   if (days >= 14) return 'animate-bounce-subtle';
   return '';
-};
-
-/**
- * Generate shadow class with glow effect
- */
-export const getShadowGlow = (color: string = 'primary'): string => {
-  return `shadow-lg shadow-${color}-500/30`;
-};
-
-/**
- * Generate hover shadow class
- */
-export const getHoverShadow = (color: string = 'primary'): string => {
-  return `hover:shadow-xl hover:shadow-${color}-500/40`;
 };

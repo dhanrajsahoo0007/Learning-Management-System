@@ -1,22 +1,20 @@
+# Build stage
 FROM golang:1.25.5-alpine AS builder
 
 WORKDIR /app
 
-# Copy go mod files
-COPY services/webhooks/go.mod services/webhooks/go.sum ./
-COPY services/shared/go.mod services/shared/go.sum ./shared/
+# Copy shared module
+COPY services/shared /app/services/shared
 
-# Download dependencies
+# Copy webhooks service
+COPY services/webhooks /app/services/webhooks
+
+# Build the webhooks service
+WORKDIR /app/services/webhooks
 RUN go mod download
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
-# Copy source code
-COPY services/webhooks/ ./
-COPY services/shared/ ./shared/
-
-# Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -o webhooks-service .
-
-# Final stage
+# Runtime stage
 FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates
@@ -24,10 +22,10 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 
 # Copy the binary from builder
-COPY --from=builder /app/webhooks-service .
+COPY --from=builder /app/services/webhooks/main .
 
 # Expose port
 EXPOSE 8087
 
 # Run the service
-CMD ["./webhooks-service"]
+CMD ["./main"]
